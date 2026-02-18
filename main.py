@@ -34,30 +34,30 @@ RSS_FEEDS = {
 }
 
 KEYWORDS = [
-    # Karo-merker
-    "Decubal", "Locobase", "Apobase", "Flux",
+    # Karo-merker (alltid relevant)
+    "Decubal", "Locobase", "Apobase", "Flux tannkrem",
     # Hudpleie / dermatologi
-    "hudpleie", "eksem", "psoriasis", "atopisk", "tørr hud", "barrierekrem",
-    "fuktighetsgivende", "dermatologi", "hudsykdom", "sårpleie", "kløe",
+    "hudpleie", "eksem", "psoriasis", "atopisk", "barrierekrem",
+    "dermatologi", "hudsykdom",
     # Oral care
-    "tannpleie", "munnhygiene", "fluor", "tannkrem", "munnvann", "tannskyll",
-    "oral care", "tannhelse", "karies",
-    # Apotek & dagligvare
+    "tannpleie", "munnhygiene", "tannkrem", "munnvann",
+    "tannhelse", "karies",
+    # Apotek
     "apotek", "Apotek 1", "Vitusapotek", "Boots apotek",
-    "Rema 1000", "NorgesGruppen", "Coop", "Kiwi", "Meny", "dagligvare",
-    "hylleplass", "sortiment", "OTC", "reseptfri",
+    "Apotekforeningen",
+    # Dagligvare – kun relevante kontekster
+    "Rema 1000", "NorgesGruppen", "hylleplass", "OTC",
     # Konkurrenter
-    "Beiersdorf", "Eucerin", "Nivea", "Unilever", "Vaseline",
-    "La Roche-Posay", "Colgate", "Oral-B", "Sensodyne", "CeraVe", "Dove",
-    # M&A & PE
-    "oppkjøp", "fusjon", "kjøper", "selger", "transaksjon", "milliard",
-    "private equity", "KKR", "Nordic Capital", "EQT", "Axel Johnson",
+    "Beiersdorf", "Eucerin", "Colgate", "Sensodyne",
+    "La Roche-Posay", "CeraVe",
+    # M&A helse/consumer health
+    "oppkjøp", "fusjon", "KKR", "Nordic Capital", "EQT",
     "consumer health", "konsumenthelse",
     # Regulatorisk
-    "Legemiddelverket", "Folkehelseinstituttet", "FHI", "Apotekforeningen",
-    "markedsføring av legemidler", "reseptfrihet", "OTC-regelverket",
+    "Legemiddelverket", "reseptfri", "OTC-regelverket",
+    "markedsføring av legemidler",
     # Generell helse/farmasi
-    "legemiddel", "farmasi", "helsesektor", "bioteknologi",
+    "legemiddel", "farmasi",
 ]
 
 CLAUDE_MODEL  = "claude-haiku-4-5-20251001"
@@ -151,7 +151,18 @@ def classify_articles(articles: list[dict]) -> list[dict]:
                 system=CLASSIFY_SYSTEM,
                 messages=[{"role": "user", "content": f"Tittel: {art['title']}\nIngress: {art['ingress']}\nKilde: {art['source']}"}],
             )
-            result = json.loads(response.content[0].text.strip())
+            raw = response.content[0].text.strip()
+
+            # Fjern eventuelle markdown-backticks
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+                raw = raw.strip()
+
+            print(f"[DEBUG] Svar for '{art['title'][:40]}': {raw[:100]}")
+
+            result = json.loads(raw)
             if result.get("relevant") and result.get("confidence", 0) >= 60:
                 art["category"]        = result.get("category", "annet")
                 art["relevance_score"] = result.get("confidence", 0)
