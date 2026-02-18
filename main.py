@@ -35,29 +35,65 @@ RSS_FEEDS = {
 
 KEYWORDS = [
     # Karo-merker (alltid relevant)
-    "Decubal", "Locobase", "Apobase", "Flux tannkrem",
+    "Decubal", "Locobase", "Apobase", "Flux",
+
     # Hudpleie / dermatologi
     "hudpleie", "eksem", "psoriasis", "atopisk", "barrierekrem",
-    "dermatologi", "hudsykdom",
+    "dermatologi", "hudsykdom", "fuktighetskrem", "sårpleie",
+    "tørr hud", "sensitiv hud", "kløe", "allergisk",
+
     # Oral care
     "tannpleie", "munnhygiene", "tannkrem", "munnvann",
-    "tannhelse", "karies",
+    "tannhelse", "karies", "fluor", "tannlege",
+
     # Apotek
-    "apotek", "Apotek 1", "Vitusapotek", "Boots apotek",
-    "Apotekforeningen",
-    # Dagligvare – kun relevante kontekster
-    "Rema 1000", "NorgesGruppen", "hylleplass", "OTC",
-    # Konkurrenter
-    "Beiersdorf", "Eucerin", "Colgate", "Sensodyne",
-    "La Roche-Posay", "CeraVe",
-    # M&A helse/consumer health
-    "oppkjøp", "fusjon", "KKR", "Nordic Capital", "EQT",
+    "apotek", "Apotek 1", "Vitusapotek", "Boots",
+    "Apotekforeningen", "apotekbransjen",
+
+    # Dagligvare & retail
+    "Rema 1000", "NorgesGruppen", "Coop", "Kiwi", "Meny", "Spar",
+    "dagligvare", "hylleplass", "sortiment", "dagligvarebransjen",
+    "supermarked", "matpris", "dagligvarekjede",
+
+    # OTC / reseptfritt
+    "OTC", "reseptfri", "reseptfritt", "egenpris",
+
+    # Konkurrenter og brands
+    "Beiersdorf", "Eucerin", "Nivea", "Unilever", "Vaseline",
+    "La Roche-Posay", "Colgate", "Oral-B", "Sensodyne",
+    "CeraVe", "Dove", "Johnson & Johnson", "Procter & Gamble",
+    "L'Oréal", "Loreal",
+
+    # M&A & PE – bredt
+    "oppkjøp", "fusjon", "oppkjøpet", "kjøper opp",
+    "private equity", "KKR", "Nordic Capital", "EQT",
+    "Axel Johnson", "Orkla", "Schibsted",
     "consumer health", "konsumenthelse",
-    # Regulatorisk
-    "Legemiddelverket", "reseptfri", "OTC-regelverket",
-    "markedsføring av legemidler",
-    # Generell helse/farmasi
-    "legemiddel", "farmasi",
+    "investeringsfond", "PE-fond",
+
+    # Regulatorisk & politikk
+    "Legemiddelverket", "Folkehelseinstituttet", "FHI",
+    "reseptfrihet", "markedsføringsloven", "markedsføring av",
+    "Helse- og omsorgsdepartementet", "helsepolitikk",
+    "helsestrategi", "folkehelse", "forebygging",
+    "EU-regulering", "EFSA", "emballasje", "bærekraft",
+    "plastforbudet", "grønn omstilling",
+
+    # Økonomi & forbrukertrender
+    "forbrukertrender", "forbrukervaner", "kjøpekraft",
+    "prisvekst", "inflasjon", "kronekurs", "renteøkning",
+    "handelsbalanse", "import", "eksport",
+    "bærekraftig forbruk", "grønn forbruker",
+
+    # Markedsføring & media
+    "influencer", "sosiale medier", "digital markedsføring",
+    "reklameforbudet", "merkevare", "brand",
+    "TV-reklame", "reklamebransjen",
+
+    # Helse generelt
+    "legemiddel", "farmasi", "helsesektor", "bioteknologi",
+    "helsekost", "naturmiddel", "kosttilskudd",
+    "eldrebølge", "kronisk sykdom",
 ]
 
 CLAUDE_MODEL  = "claude-haiku-4-5-20251001"
@@ -124,18 +160,33 @@ def fetch_recent_articles() -> list[dict]:
 # ── Claude-klassifisering ─────────────────────────────────────────────────────
 
 CLASSIFY_SYSTEM = """Du er markedsintelligensanalytiker for Karo Healthcare Norge.
-Karo eier Decubal, Locobase, Apobase (hudpleie) og Flux (oral care), selger via apotek og dagligvare. Eid av KKR.
+Karo eier Decubal, Locobase, Apobase (hudpleie/fuktighetskrem) og Flux (tannpleie/oral care).
+Karo selger via apotek og dagligvare i Norge. Eid av PE-fondet KKR.
 
-Returner KUN gyldig JSON – ingen markdown, ingen forklaringer:
+Vurder om nyheten er relevant for Karo – DIREKTE eller INDIREKTE.
+
+Direkte relevante: hudpleie, eksem, tannpleie, apotek, OTC-legemidler, konkurrenter som Beiersdorf/Colgate, M&A i helsesektoren.
+
+Indirekte relevante (inkluder disse også):
+- Helsepolitikk og regulering som påvirker OTC-markedet
+- Dagligvarebransjen: sortimentsendringer, prispress, kjedestrategi
+- Forbrukertrender: prisvekst, kjøpekraft, bærekraft, merkevaretrender
+- Markedsføring: nye regler, influencer-regler, digital reklame
+- Norsk økonomi som påvirker forbrukermarkedet
+- PE/M&A bredt i konsumentbransjen
+- Helsepolitikk og folkehelse
+
+Vær INKLUDERENDE – ved tvil, sett relevant=true med lav confidence.
+
+Returner KUN gyldig JSON:
 {
   "relevant": true,
   "category": "apotek",
   "confidence": 85,
-  "summary": "Norsk oppsummering på 1-2 setninger."
+  "summary": "1-2 setninger som forklarer hvorfor dette er relevant for Karo."
 }
 
-Kategorier: M&A | apotek | dagligvare | dermatologi | oral-care | konkurrenter | regulatorisk | legemiddel | helsesektor | annet
-relevant = true kun hvis artikkelen er nyttig for Karo Healthcare.
+Kategorier: M&A | apotek | dagligvare | dermatologi | oral-care | konkurrenter | regulatorisk | forbrukertrender | helsepolitikk | markedsføring | økonomi | annet
 confidence = 0-100."""
 
 
