@@ -16,21 +16,29 @@ from email.utils import parsedate_to_datetime
 # ── Konfigurasjon ─────────────────────────────────────────────────────────────
 
 RSS_FEEDS = {
-    "VG":           ["https://www.vg.no/rss/feed/forsiden/",
-                     "https://www.vg.no/rss/feed/?categories=1069"],
-    "E24":          ["http://e24.no/rss2/",
-                     "https://e24.no/rss2/?seksjon=boers-og-finans"],
-    "NRK":          ["https://www.nrk.no/toppsaker.rss",
-                     "https://www.nrk.no/norge/toppsaker.rss"],
-    "Dagbladet":    ["https://www.dagbladet.no/?lab_viewport=rss"],
-    "Aftenposten":  ["https://www.aftenposten.no/rss/"],
-    "Dagsavisen":   ["https://www.dagsavisen.no/rss"],
-    "DN":           ["https://services.dn.no/api/feed/rss/"],
-    "Finansavisen": ["https://ws.finansavisen.no/api/articles.rss",
-                     "https://ws.finansavisen.no/api/articles.rss?category=B%C3%B8rs"],
-    "Nettavisen":   ["https://www.nettavisen.no/service/rich-rss?tag=nyheter"],
-    "TV2":          ["https://www.tv2.no/rss/nyheter/innenriks",
-                     "https://www.tv2.no/rss/nyheter/utenriks"],
+    # Norske kilder
+    "VG":             ["https://www.vg.no/rss/feed/forsiden/",
+                       "https://www.vg.no/rss/feed/?categories=1069"],
+    "E24":            ["http://e24.no/rss2/",
+                       "https://e24.no/rss2/?seksjon=boers-og-finans"],
+    "NRK":            ["https://www.nrk.no/toppsaker.rss",
+                       "https://www.nrk.no/norge/toppsaker.rss"],
+    "Dagbladet":      ["https://www.dagbladet.no/?lab_viewport=rss"],
+    "Aftenposten":    ["https://www.aftenposten.no/rss/"],
+    "Dagsavisen":     ["https://www.dagsavisen.no/rss"],
+    "DN":             ["https://services.dn.no/api/feed/rss/"],
+    "Finansavisen":   ["https://ws.finansavisen.no/api/articles.rss",
+                       "https://ws.finansavisen.no/api/articles.rss?category=B%C3%B8rs"],
+    "Nettavisen":     ["https://www.nettavisen.no/service/rich-rss?tag=nyheter"],
+    "TV2":            ["https://www.tv2.no/rss/nyheter/innenriks",
+                       "https://www.tv2.no/rss/nyheter/utenriks"],
+    "Dagens Medisin": ["https://www.dagensmedisin.no/rss"],
+    # Internasjonale kilder
+    "Reuters":        ["https://feeds.reuters.com/reuters/businessNews",
+                       "https://feeds.reuters.com/reuters/healthNews"],
+    "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
+                       "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
+    "The Economist":  ["https://news.google.com/rss/search?q=site:economist.com+health+pharma+consumer&hl=en&gl=NO&ceid=NO:en"],
 }
 
 KEYWORDS = [
