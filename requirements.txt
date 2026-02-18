@@ -1,4 +1,4 @@
 feedparser==6.0.11
 anthropic==0.40.0
 supabase==2.10.0
-resend==2.5.0
+resend==2.22.0
