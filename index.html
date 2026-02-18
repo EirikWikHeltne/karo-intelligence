@@ -7,224 +7,146 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:       #faf9f7;
-      --rule:     #e8e4de;
-      --rule-dk:  #d0cac0;
-      --ink-1:    #1a1714;
-      --ink-2:    #3d3830;
-      --ink-3:    #7a7268;
-      --ink-4:    #b5afa6;
-      --ink-5:    #d5d0c8;
-      --serif:    'Cormorant Garamond', 'Georgia', serif;
-      --mono:     'Geist Mono', 'Courier New', monospace;
-      --sans:     'Geist', system-ui, sans-serif;
-      --max:      960px;
+      --bg: #faf9f7; --rule: #e8e4de; --rule-dk: #d0cac0;
+      --ink-1: #1a1714; --ink-2: #3d3830; --ink-3: #7a7268;
+      --ink-4: #b5afa6; --ink-5: #d5d0c8;
+      --green: #2d6a4f; --red: #8b1e1e;
+      --serif: 'Cormorant Garamond','Georgia',serif;
+      --mono: 'Geist Mono','Courier New',monospace;
+      --sans: 'Geist',system-ui,sans-serif;
+      --max: 960px;
     }
-
     html { font-size: 16px; }
-    body {
-      background: var(--bg);
-      color: var(--ink-2);
-      font-family: var(--sans);
-      font-weight: 300;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-    }
-
+    body { background: var(--bg); color: var(--ink-2); font-family: var(--sans); font-weight: 300; min-height: 100vh; -webkit-font-smoothing: antialiased; }
     .shell { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
 
-    /* ── Masthead ── */
-    #masthead {
-      border-bottom: 2px solid var(--ink-1);
-      padding: 28px 0 16px;
-    }
-    .masthead-top {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-    .masthead-logo {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-    }
-    .masthead-date {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 300;
-      color: var(--ink-4);
-      letter-spacing: 0.06em;
-    }
-    .masthead-title {
-      font-family: var(--serif);
-      font-size: clamp(36px, 5.5vw, 54px);
-      font-weight: 400;
-      line-height: 1.05;
-      color: var(--ink-1);
-      letter-spacing: -0.01em;
-    }
+    /* Masthead */
+    #masthead { border-bottom: 2px solid var(--ink-1); padding: 28px 0 16px; }
+    .masthead-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .masthead-logo { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3); }
+    .masthead-date { font-family: var(--mono); font-size: 10px; color: var(--ink-4); letter-spacing: 0.06em; }
+    .masthead-title { font-family: var(--serif); font-size: clamp(36px,5.5vw,54px); font-weight: 400; line-height: 1.05; color: var(--ink-1); letter-spacing: -0.01em; }
     .masthead-title em { font-style: italic; }
 
-    /* ── Nav ── */
+    /* Nav */
     #nav-strip { border-bottom: 1px solid var(--rule); }
     .nav-inner { display: flex; align-items: center; }
-    .nav-btn {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      padding: 12px 20px 10px;
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
-      margin-bottom: -1px;
-    }
+    .nav-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 20px 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: color .15s,border-color .15s; margin-bottom: -1px; }
     .nav-btn:first-child { padding-left: 0; }
     .nav-btn.active { color: var(--ink-1); border-bottom-color: var(--ink-1); }
     .nav-btn:hover:not(.active) { color: var(--ink-2); }
     .nav-sep { width: 1px; height: 12px; background: var(--rule-dk); margin: 0 4px; }
 
-    /* ── Category bar ── */
+    /* Category bar */
     #cat-strip { border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
     #cat-strip::-webkit-scrollbar { display: none; }
-    .cat-inner { display: flex; gap: 0; padding: 10px 0; white-space: nowrap; }
-    .cat-btn {
-      background: none;
-      border: 1px solid transparent;
-      border-radius: 2px;
-      padding: 4px 12px;
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-      cursor: pointer;
-      transition: all 0.12s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .cat-inner { display: flex; padding: 10px 0; white-space: nowrap; }
+    .cat-btn { background: none; border: 1px solid transparent; border-radius: 2px; padding: 4px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; display: flex; align-items: center; gap: 6px; }
     .cat-btn.active { background: var(--ink-1); color: var(--bg); border-color: var(--ink-1); }
     .cat-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--rule-dk); }
     .cat-n { font-size: 9px; opacity: 0.5; }
     .cat-btn.active .cat-n { opacity: 0.65; }
 
-    /* ── Toolbar ── */
-    #toolbar {
-      display: none;
-      padding: 20px 0;
-      border-bottom: 1px solid var(--rule);
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    /* Toolbar */
+    #toolbar { display: none; padding: 20px 0; border-bottom: 1px solid var(--rule); gap: 16px; align-items: center; flex-wrap: wrap; }
     #toolbar.visible { display: flex; }
     .search-wrap { flex: 1; min-width: 260px; position: relative; }
     .search-icon { position: absolute; left: 0; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--ink-4); pointer-events: none; }
-    #search-input {
-      width: 100%; background: transparent;
-      border: none; border-bottom: 1px solid var(--rule-dk);
-      padding: 6px 0 6px 22px;
-      font-family: var(--sans); font-size: 13px; font-weight: 300;
-      color: var(--ink-1); outline: none; transition: border-color 0.15s;
-    }
+    #search-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--rule-dk); padding: 6px 0 6px 22px; font-family: var(--sans); font-size: 13px; font-weight: 300; color: var(--ink-1); outline: none; transition: border-color .15s; }
     #search-input::placeholder { color: var(--ink-4); }
     #search-input:focus { border-bottom-color: var(--ink-1); }
     .src-filters { display: flex; gap: 4px; flex-wrap: wrap; }
-    .src-btn {
-      background: none; border: 1px solid var(--rule-dk); border-radius: 2px;
-      padding: 4px 10px; font-family: var(--mono); font-size: 9px;
-      letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
-      cursor: pointer; transition: all 0.12s;
-    }
+    .src-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 10px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; }
     .src-btn.active { background: var(--ink-1); border-color: var(--ink-1); color: var(--bg); }
     .src-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--ink-2); }
 
-    /* ── Main ── */
+    /* Main */
     #main { padding: 36px 0 80px; }
-    .section-header {
-      display: flex; align-items: baseline; justify-content: space-between;
-      margin-bottom: 28px; padding-bottom: 14px; border-bottom: 1px solid var(--rule);
-    }
+    .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
     .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-3); }
     .section-count { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
 
-    /* ── Featured ── */
-    .article-featured {
-      display: block; text-decoration: none;
-      padding: 28px 0; border-bottom: 1px solid var(--rule);
-      transition: opacity 0.15s;
-    }
-    .article-featured:hover { opacity: 0.7; }
+    /* Featured */
+    .article-featured { display: block; text-decoration: none; padding: 28px 0; border-bottom: 1px solid var(--rule); }
     .af-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .af-title {
-      font-family: var(--serif); font-size: clamp(22px, 3.5vw, 34px);
-      font-weight: 400; line-height: 1.2; color: var(--ink-1);
-      letter-spacing: -0.01em; margin-bottom: 12px;
-    }
-    .af-summary {
-      font-family: var(--serif); font-size: 16px; font-style: italic;
-      line-height: 1.65; color: var(--ink-3); max-width: 620px;
-    }
+    .af-title { font-family: var(--serif); font-size: clamp(22px,3.5vw,34px); font-weight: 400; line-height: 1.2; color: var(--ink-1); letter-spacing: -0.01em; margin-bottom: 12px; transition: opacity .15s; }
+    .article-featured:hover .af-title { opacity: 0.7; }
+    .af-summary { font-family: var(--serif); font-size: 16px; font-style: italic; line-height: 1.65; color: var(--ink-3); max-width: 620px; }
 
-    /* ── Article row ── */
+    /* Article row */
     .articles-list { display: flex; flex-direction: column; }
-    .article-row {
-      display: flex; gap: 20px; align-items: baseline;
-      padding: 18px 0; border-bottom: 1px solid var(--rule);
-      text-decoration: none; transition: opacity 0.12s;
-    }
-    .article-row:hover { opacity: 0.6; }
+    .article-row { display: flex; gap: 16px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid var(--rule); text-decoration: none; }
     .article-row:last-child { border-bottom: none; }
-    .ar-idx { font-family: var(--mono); font-size: 10px; color: var(--ink-5); min-width: 20px; flex-shrink: 0; padding-top: 2px; }
+    .ar-idx { font-family: var(--mono); font-size: 10px; color: var(--ink-5); min-width: 20px; flex-shrink: 0; padding-top: 3px; }
     .ar-body { flex: 1; min-width: 0; }
-    .ar-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .ar-title-link { text-decoration: none; display: block; transition: opacity .12s; }
+    .ar-title-link:hover { opacity: 0.65; }
+    .ar-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
     .m-cat { font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-1); }
     .m-dot { width: 2px; height: 2px; border-radius: 50%; background: var(--ink-5); flex-shrink: 0; }
-    .m-src { font-family: var(--mono); font-size: 9px; color: var(--ink-4); letter-spacing: 0.05em; }
+    .m-src { font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
     .m-time { font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
     .m-score { font-family: var(--mono); font-size: 9px; color: var(--ink-5); margin-left: auto; }
     .ar-title { font-family: var(--serif); font-size: 18px; font-weight: 500; line-height: 1.3; color: var(--ink-1); margin-bottom: 4px; }
     .ar-summary { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--ink-3); }
 
-    /* ── Stats ── */
+    /* Feedback buttons */
+    .ar-feedback { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+    .fb-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 3px 10px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--ink-4); cursor: pointer; transition: all .12s; display: flex; align-items: center; gap: 4px; }
+    .fb-btn:hover { color: var(--ink-2); border-color: var(--rule-dk); }
+    .fb-btn.up.voted { color: var(--green); border-color: var(--green); background: #2d6a4f0f; }
+    .fb-btn.down.voted { color: var(--red); border-color: var(--red); background: #8b1e1e0f; }
+    .fb-label { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
+
+    /* Stats */
     .stats-row { display: none; gap: 40px; padding: 18px 0 24px; border-bottom: 1px solid var(--rule); }
     .stats-row.visible { display: flex; }
     .stat { display: flex; flex-direction: column; gap: 2px; }
     .stat-n { font-family: var(--mono); font-size: 20px; font-weight: 300; color: var(--ink-1); letter-spacing: -0.02em; }
     .stat-l { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4); }
 
-    /* ── States ── */
+    /* Sources page */
+    #sources-page { display: none; padding: 36px 0 80px; }
+    #sources-page.visible { display: block; }
+    .sources-section { margin-bottom: 48px; }
+    .sources-section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+    .sources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+    .source-card { border: 1px solid var(--rule); border-radius: 3px; padding: 12px 16px; }
+    .source-name { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink-1); margin-bottom: 4px; }
+    .source-url { font-family: var(--mono); font-size: 9px; color: var(--ink-4); word-break: break-all; line-height: 1.5; }
+    .keywords-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .kw-tag { background: var(--rule); border-radius: 2px; padding: 3px 10px; font-family: var(--mono); font-size: 10px; color: var(--ink-2); }
+
+    /* Calibration */
+    .cal-intro { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--ink-3); line-height: 1.7; max-width: 640px; margin-bottom: 32px; }
+    .cal-stats { display: flex; gap: 32px; margin-bottom: 36px; flex-wrap: wrap; }
+    .cal-stat { display: flex; flex-direction: column; gap: 3px; }
+    .cal-stat-n { font-family: var(--mono); font-size: 28px; font-weight: 300; color: var(--ink-1); }
+    .cal-stat-l { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4); }
+    .cal-table { width: 100%; border-collapse: collapse; }
+    .cal-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); text-align: left; padding: 8px 0; border-bottom: 1px solid var(--rule-dk); }
+    .cal-table td { font-family: var(--sans); font-size: 13px; font-weight: 300; color: var(--ink-2); padding: 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+    .cal-table td:first-child { font-family: var(--mono); font-size: 10px; color: var(--ink-1); font-weight: 500; letter-spacing: 0.05em; padding-right: 16px; }
+    .bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .bar { height: 4px; border-radius: 2px; background: var(--ink-1); min-width: 2px; transition: width .3s; }
+    .bar-val { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+
+    /* States */
     .empty { padding: 80px 0; font-family: var(--mono); font-size: 10px; color: var(--ink-4); letter-spacing: 0.12em; text-transform: uppercase; }
     .loading { padding: 60px 0; font-family: var(--mono); font-size: 10px; color: var(--ink-4); letter-spacing: 0.12em; text-transform: uppercase; }
-    @keyframes blink { 0%,100%{opacity:0.3}50%{opacity:1} }
+    @keyframes blink { 0%,100%{opacity:.3}50%{opacity:1} }
     .loading::after { content: "..."; animation: blink 1.2s ease infinite; }
 
-    /* ── Footer ── */
-    footer {
-      border-top: 2px solid var(--ink-1);
-      padding: 18px 0;
-      display: flex; justify-content: space-between; align-items: center;
-    }
+    /* Footer */
+    footer { border-top: 2px solid var(--ink-1); padding: 18px 0; display: flex; justify-content: space-between; align-items: center; }
     .footer-brand { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-4); }
-    .footer-note  { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
+    .footer-note { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
 
     @keyframes fadeIn { from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)} }
-    .fade-in { animation: fadeIn 0.2s ease forwards; }
+    .fade-in { animation: fadeIn .2s ease forwards; }
   </style>
 </head>
 <body>
@@ -243,6 +165,8 @@
       <button class="nav-btn active" onclick="switchView('today',this)">Dagens brief</button>
       <div class="nav-sep"></div>
       <button class="nav-btn" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
+      <div class="nav-sep"></div>
+      <button class="nav-btn" onclick="switchView('sources',this)">Kilder &amp; kalibrering</button>
     </div>
   </div>
 
@@ -267,6 +191,44 @@
     <div id="articles-container"><div class="loading">Laster nyheter</div></div>
   </main>
 
+  <!-- Sources & calibration page -->
+  <div id="sources-page">
+
+    <div class="sources-section">
+      <div class="section-header" style="margin-bottom:24px">
+        <span class="section-label">Kalibrering</span>
+      </div>
+      <p class="cal-intro">
+        Bruk tommel opp/ned på artikler i briefen for å kalibrere agenten over tid.
+        Feedback lagres i databasen og gir deg innsikt i hvilke kategorier og kilder
+        som treffer best. Fremtidige versjoner av agenten vil bruke denne dataen til
+        å justere klassifiseringen automatisk.
+      </p>
+      <div class="cal-stats" id="cal-stats">
+        <div class="cal-stat"><span class="cal-stat-n" id="cs-total">–</span><span class="cal-stat-l">Totale tilbakemeldinger</span></div>
+        <div class="cal-stat"><span class="cal-stat-n" id="cs-up">–</span><span class="cal-stat-l">Relevante ↑</span></div>
+        <div class="cal-stat"><span class="cal-stat-n" id="cs-down">–</span><span class="cal-stat-l">Ikke relevante ↓</span></div>
+        <div class="cal-stat"><span class="cal-stat-n" id="cs-pct">–</span><span class="cal-stat-l">Presisjon</span></div>
+      </div>
+
+      <table class="cal-table" id="cal-table">
+        <thead><tr><th>Kategori</th><th>↑ Relevant</th><th>↓ Ikke relevant</th><th>Presisjon</th></tr></thead>
+        <tbody id="cal-tbody"><tr><td colspan="4" style="color:var(--ink-4);font-family:var(--mono);font-size:10px">Ingen tilbakemeldinger ennå</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="sources-section">
+      <div class="sources-section-title">RSS-kilder som overvåkes</div>
+      <div class="sources-grid" id="sources-grid"></div>
+    </div>
+
+    <div class="sources-section">
+      <div class="sources-section-title">Nøkkelord-filter ({{ KW_COUNT }} ord)</div>
+      <div class="keywords-grid" id="keywords-grid"></div>
+    </div>
+
+  </div>
+
   <footer>
     <span class="footer-brand">Karo Healthcare Norway</span>
     <span class="footer-note">Intern · Ikke for distribusjon</span>
@@ -288,25 +250,78 @@ const CATEGORIES = [
 ];
 const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2"];
 
+const RSS_FEEDS = {
+  "VG":           ["https://www.vg.no/rss/feed/forsiden/","https://www.vg.no/rss/feed/?categories=1069"],
+  "E24":          ["http://e24.no/rss2/","https://e24.no/rss2/?seksjon=boers-og-finans"],
+  "NRK":          ["https://www.nrk.no/toppsaker.rss","https://www.nrk.no/norge/toppsaker.rss"],
+  "Dagbladet":    ["https://www.dagbladet.no/?lab_viewport=rss"],
+  "Aftenposten":  ["https://www.aftenposten.no/rss/"],
+  "Dagsavisen":   ["https://www.dagsavisen.no/rss"],
+  "DN":           ["https://services.dn.no/api/feed/rss/"],
+  "Finansavisen": ["https://ws.finansavisen.no/api/articles.rss","https://ws.finansavisen.no/api/articles.rss?category=B%C3%B8rs"],
+  "Nettavisen":   ["https://www.nettavisen.no/service/rich-rss?tag=nyheter"],
+  "TV2":          ["https://www.tv2.no/rss/nyheter/innenriks","https://www.tv2.no/rss/nyheter/utenriks"],
+};
+
+const KEYWORDS = [
+  "Decubal","Locobase","Apobase","Flux",
+  "hudpleie","eksem","psoriasis","atopisk","barrierekrem","dermatologi","hudsykdom","fuktighetskrem","sårpleie","tørr hud","sensitiv hud","kløe","allergisk",
+  "tannpleie","munnhygiene","tannkrem","munnvann","tannhelse","karies","fluor","tannlege",
+  "apotek","Apotek 1","Vitusapotek","Boots","Apotekforeningen","apotekbransjen",
+  "Rema 1000","NorgesGruppen","Coop","Kiwi","Meny","Spar","dagligvare","hylleplass","sortiment","dagligvarebransjen","supermarked","matpris","dagligvarekjede",
+  "OTC","reseptfri","reseptfritt","egenpris",
+  "Beiersdorf","Eucerin","Nivea","Unilever","Vaseline","La Roche-Posay","Colgate","Oral-B","Sensodyne","CeraVe","Dove","Johnson & Johnson","Procter & Gamble","L'Oréal",
+  "oppkjøp","fusjon","private equity","KKR","Nordic Capital","EQT","Axel Johnson","Orkla","consumer health","konsumenthelse","investeringsfond","PE-fond",
+  "Legemiddelverket","Folkehelseinstituttet","FHI","reseptfrihet","markedsføringsloven","helsepolitikk","folkehelse","EU-regulering","emballasje","bærekraft",
+  "forbrukertrender","forbrukervaner","kjøpekraft","prisvekst","inflasjon","kronekurs","renteøkning",
+  "influencer","sosiale medier","digital markedsføring","merkevare","reklamebransjen",
+  "legemiddel","farmasi","helsesektor","bioteknologi","helsekost","kosttilskudd",
+];
+
 let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle";
+const feedback = {}; // articleId -> "up"|"down"
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ── Data loading ──────────────────────────────────────────────────────────────
 async function loadArticles() {
   document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
   try {
     let q = sb.from("articles").select("*").order("published_at",{ascending:false});
     if (activeView==="today") q=q.gte("published_at", new Date(Date.now()-26*3600000).toISOString());
     else q=q.limit(300);
-    const {data,error}=await q;
-    if(error) throw error;
+    const {data,error}=await q; if(error) throw error;
     allArticles=data||[];
-  } catch(e) {
-    console.warn("Demo-modus:",e.message);
-    allArticles=DEMO;
-  }
+  } catch(e) { console.warn("Demo-modus:",e.message); allArticles=DEMO; }
   applyFilters();
 }
 
+async function loadFeedback() {
+  try {
+    const {data}=await sb.from("feedback").select("*");
+    (data||[]).forEach(f=>{ feedback[f.article_id]=f.vote; });
+    renderCalibration();
+  } catch(e) { /* silently ignore if table doesn't exist yet */ }
+}
+
+// ── Feedback ──────────────────────────────────────────────────────────────────
+async function vote(articleId, v, upBtn, downBtn) {
+  const prev = feedback[articleId];
+  if (prev === v) return; // already voted this way
+
+  feedback[articleId] = v;
+  upBtn.classList.toggle("voted", v==="up");
+  downBtn.classList.toggle("voted", v==="down");
+
+  try {
+    await sb.from("feedback").upsert(
+      {article_id: articleId, vote: v, voted_at: new Date().toISOString()},
+      {on_conflict: "article_id"}
+    );
+    renderCalibration();
+  } catch(e) { console.warn("Feedback feilet:", e.message); }
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
 function applyFilters() {
   const q=(document.getElementById("search-input")?.value||"").toLowerCase();
   const f=allArticles.filter(a=>{
@@ -323,10 +338,11 @@ function applyFilters() {
 function timeAgo(iso){
   if(!iso) return "";
   const h=Math.floor((Date.now()-new Date(iso))/3600000);
-  if(h<1) return "<1t"; if(h<24) return `${h}t`; const d=Math.floor(h/24);
-  return d===1?"i går":`${d}d`;
+  if(h<1) return "<1t"; if(h<24) return `${h}t`;
+  const d=Math.floor(h/24); return d===1?"i går":`${d}d`;
 }
 
+// ── Render ────────────────────────────────────────────────────────────────────
 function renderCatBar(arts){
   const c={};arts.forEach(a=>{c[a.category]=(c[a.category]||0)+1;});
   document.getElementById("cat-buttons").innerHTML=CATEGORIES.map(cat=>{
@@ -335,6 +351,25 @@ function renderCatBar(arts){
     const a=activeCategory===cat.id;
     return `<button class="cat-btn${a?" active":""}" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
   }).join("");
+}
+
+function feedbackHtml(id) {
+  const v = feedback[id];
+  return `<div class="ar-feedback">
+    <button class="fb-btn up${v==='up'?' voted':''}" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
+    <button class="fb-btn down${v==='down'?' voted':''}" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
+    ${v ? `<span class="fb-label">Lagret</span>` : ""}
+  </div>`;
+}
+
+function handleVote(id, v, btn) {
+  const upBtn  = document.getElementById(`up-${id}`);
+  const downBtn= document.getElementById(`dn-${id}`);
+  vote(id, v, upBtn, downBtn);
+  // show "Lagret" label
+  const fb = btn.closest(".ar-feedback");
+  const lbl = fb.querySelector(".fb-label");
+  if(!lbl){ const s=document.createElement("span"); s.className="fb-label"; s.textContent="Lagret"; fb.appendChild(s); }
 }
 
 function renderArticles(arts){
@@ -352,58 +387,142 @@ function renderArticles(arts){
   let html="";
   const start=activeView==="today"?1:0;
 
-  if(activeView==="today"){
+  if(activeView==="today"&&arts[0]){
     const f=arts[0];
-    html+=`<a class="article-featured fade-in" href="${f.url||"#"}" target="_blank">
+    html+=`<div class="article-featured">
       <div class="af-meta"><span class="m-cat">${f.category||""}</span><span class="m-dot"></span><span class="m-src">${f.source||""}</span><span class="m-dot"></span><span class="m-time">${timeAgo(f.published_at)}</span></div>
-      <div class="af-title">${f.title||""}</div>
+      <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
       <div class="af-summary">${f.summary||""}</div>
-    </a>`;
+      ${feedbackHtml(f.id)}
+    </div>`;
   }
 
   html+=`<div class="articles-list">`;
   arts.slice(start).forEach((a,i)=>{
-    html+=`<a class="article-row fade-in" href="${a.url||"#"}" target="_blank" style="animation-delay:${i*22}ms">
+    html+=`<div class="article-row fade-in" style="animation-delay:${i*22}ms">
       <span class="ar-idx">${String(i+start+1).padStart(2,"0")}</span>
       <div class="ar-body">
         <div class="ar-meta"><span class="m-cat">${a.category||""}</span><span class="m-dot"></span><span class="m-src">${a.source||""}</span><span class="m-dot"></span><span class="m-time">${timeAgo(a.published_at)}</span><span class="m-score">▲${a.relevance_score||""}</span></div>
-        <div class="ar-title">${a.title||""}</div>
+        <a href="${a.url||'#'}" target="_blank" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
         <div class="ar-summary">${a.summary||""}</div>
+        ${feedbackHtml(a.id)}
       </div>
-    </a>`;
+    </div>`;
   });
   html+=`</div>`;
   el.innerHTML=html;
 }
 
-function switchView(v,btn){
+// ── Sources & calibration page ────────────────────────────────────────────────
+function renderSourcesPage(){
+  // Sources grid
+  document.getElementById("sources-grid").innerHTML=
+    Object.entries(RSS_FEEDS).map(([name,urls])=>
+      urls.map(url=>`<div class="source-card">
+        <div class="source-name">${name}</div>
+        <div class="source-url">${url}</div>
+      </div>`).join("")
+    ).join("");
+
+  // Keywords
+  document.getElementById("keywords-grid").innerHTML=
+    KEYWORDS.map(k=>`<span class="kw-tag">${k}</span>`).join("");
+
+  // Fix count in title
+  document.querySelectorAll(".sources-section-title").forEach(el=>{
+    el.textContent=el.textContent.replace("{{ KW_COUNT }}",KEYWORDS.length);
+  });
+
+  renderCalibration();
+}
+
+function renderCalibration(){
+  const votes=Object.values(feedback);
+  const up=votes.filter(v=>v==="up").length;
+  const down=votes.filter(v=>v==="down").length;
+  const total=up+down;
+  const pct=total>0?Math.round(up/total*100):0;
+
+  document.getElementById("cs-total").textContent=total||"–";
+  document.getElementById("cs-up").textContent=up||"–";
+  document.getElementById("cs-down").textContent=down||"–";
+  document.getElementById("cs-pct").textContent=total>0?`${pct}%`:"–";
+
+  // Per-category breakdown
+  const cats={};
+  allArticles.forEach(a=>{
+    const v=feedback[a.id];
+    if(!v) return;
+    if(!cats[a.category]) cats[a.category]={up:0,down:0};
+    cats[a.category][v]++;
+  });
+  const tbody=document.getElementById("cal-tbody");
+  if(!Object.keys(cats).length){
+    tbody.innerHTML='<tr><td colspan="4" style="color:var(--ink-4);font-family:var(--mono);font-size:10px;padding:12px 0">Ingen tilbakemeldinger ennå – bruk ↑/↓ på artiklene</td></tr>';
+    return;
+  }
+  tbody.innerHTML=Object.entries(cats).sort((a,b)=>(b[1].up+b[1].down)-(a[1].up+a[1].down)).map(([cat,v])=>{
+    const t=v.up+v.down;
+    const p=Math.round(v.up/t*100);
+    return `<tr>
+      <td>${cat}</td>
+      <td>${v.up}</td>
+      <td>${v.down}</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:${p}px"></div><span class="bar-val">${p}%</span></div></td>
+    </tr>`;
+  }).join("");
+}
+
+// ── View switching ────────────────────────────────────────────────────────────
+function switchView(v, btn){
   activeView=v;
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  document.getElementById("toolbar").classList.toggle("visible",v==="archive");
-  const t=document.querySelector(".masthead-title");
-  t.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
-  document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
-  loadArticles();
+
+  const mainEl=document.getElementById("main");
+  const sourcesEl=document.getElementById("sources-page");
+  const catStrip=document.getElementById("cat-strip");
+  const toolbar=document.getElementById("toolbar");
+
+  if(v==="sources"){
+    mainEl.style.display="none";
+    sourcesEl.classList.add("visible");
+    catStrip.style.display="none";
+    toolbar.classList.remove("visible");
+    document.querySelector(".masthead-title").innerHTML="Kilder <em>&amp; kalibrering</em>";
+    renderSourcesPage();
+  } else {
+    mainEl.style.display="";
+    sourcesEl.classList.remove("visible");
+    catStrip.style.display="";
+    toolbar.classList.toggle("visible", v==="archive");
+    document.querySelector(".masthead-title").innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
+    document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
+    loadArticles();
+  }
 }
+
 function setCat(cat){activeCategory=cat;applyFilters();}
 function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 
+// ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
   `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
 ).join("");
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 loadArticles();
+loadFeedback();
 
+// ── Demo data ─────────────────────────────────────────────────────────────────
 const DEMO=[
-  {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie etter sterk etterspørsel",source:"E24",category:"apotek",published_at:"2026-02-18T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Eksem og tørr hud er de raskest voksende segmentene.",url:"#",relevance_score:92},
-  {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-18T07:45:00Z",summary:"KKR skal ifølge kilder vurdere strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg eller børsnotering i 2026–2027.",url:"#",relevance_score:97},
-  {id:"3",title:"Ny studie: Barrierekrem halverer eksemoppbluss hos barn",source:"NRK",category:"dermatologi",published_at:"2026-02-18T08:30:00Z",summary:"En norsk klinisk studie viser at daglig bruk av fuktighetsgivende barrierekrem reduserer eksemoppbluss med 52% hos barn under 5 år. Resultatene støtter økt bruk av OTC-produkter.",url:"#",relevance_score:88},
-  {id:"4",title:"Rema 1000 og NorgesGruppen kutter antall hudpleiebrands i 2026",source:"DN",category:"dagligvare",published_at:"2026-02-17T14:00:00Z",summary:"Begge de store dagligvarekjedene signaliserer en konsolidering av sortimentet der kun topp-2 brands per underkategori beholder hylleplass.",url:"#",relevance_score:85},
-  {id:"5",title:"Beiersdorf øker markedsbudsjettet for Eucerin i Norden med 40%",source:"Aftenposten",category:"konkurrenter",published_at:"2026-02-17T10:15:00Z",summary:"Beiersdorf bekrefter en kraftig økning i medietrykket for Eucerin-linjen i Skandinavia, med særlig fokus på digital og apotek-kanalen fremover.",url:"#",relevance_score:83},
-  {id:"6",title:"Legemiddelverket foreslår nye regler for OTC-markedsføring",source:"NRK",category:"regulatorisk",published_at:"2026-02-17T09:00:00Z",summary:"Legemiddelverket sender på høring forslag om strengere krav til dokumentasjon ved markedsføring av reseptfrie legemidler og grenseprodukter.",url:"#",relevance_score:79},
-  {id:"7",title:"Colgate-Palmolive melder svakere global vekst – Norden skiller seg ut",source:"E24",category:"oral-care",published_at:"2026-02-16T11:30:00Z",summary:"I kvartalsrapporten melder Colgate om flat volumvekst globalt, men Norden trekkes frem som unntak med positiv utvikling for premium tannpleieprodukter.",url:"#",relevance_score:76},
-  {id:"8",title:"PE-fond kjøper norsk apotekjede for 1,2 milliarder",source:"Finansavisen",category:"M&A",published_at:"2026-02-16T08:00:00Z",summary:"Et nordisk PE-fond har fullført kjøpet av en regional apotekjede med 45 utsalgssteder i Sør-Norge. Transaksjonen er ventet å påvirke innkjøpsforhandlingene for leverandørene.",url:"#",relevance_score:91},
+  {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie etter sterk etterspørsel",source:"E24",category:"apotek",published_at:"2026-02-18T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2.",url:"#",relevance_score:92},
+  {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-18T07:45:00Z",summary:"KKR vurderer strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg i 2026–2027.",url:"#",relevance_score:97},
+  {id:"3",title:"Ny studie: Barrierekrem halverer eksemoppbluss hos barn",source:"NRK",category:"dermatologi",published_at:"2026-02-18T08:30:00Z",summary:"En norsk klinisk studie viser at daglig bruk av barrierekrem reduserer eksemoppbluss med 52% hos barn under 5 år.",url:"#",relevance_score:88},
+  {id:"4",title:"Rema 1000 kutter antall hudpleiebrands i sortimentet",source:"DN",category:"dagligvare",published_at:"2026-02-17T14:00:00Z",summary:"Rema 1000 signaliserer konsolidering av sortimentet der kun topp-2 brands per underkategori beholder hylleplass.",url:"#",relevance_score:85},
+  {id:"5",title:"Beiersdorf øker markedsbudsjettet for Eucerin i Norden med 40%",source:"Aftenposten",category:"konkurrenter",published_at:"2026-02-17T10:15:00Z",summary:"Beiersdorf bekrefter kraftig økning i medietrykket for Eucerin i Skandinavia, med fokus på apotek-kanalen.",url:"#",relevance_score:83},
+  {id:"6",title:"Prisvekst presser norske husholdninger mot rimeligere merkevarer",source:"NRK",category:"forbrukertrender",published_at:"2026-02-17T09:00:00Z",summary:"Ny undersøkelse viser at 4 av 10 nordmenn bytter til rimeligere alternativer i dagligvare og apotek som følge av prisvekst.",url:"#",relevance_score:74},
+  {id:"7",title:"Colgate melder svakere global vekst – Norden skiller seg ut",source:"E24",category:"oral-care",published_at:"2026-02-16T11:30:00Z",summary:"I kvartalsrapporten melder Colgate om flat volumvekst globalt, men Norden trekkes frem som unntak med positiv utvikling.",url:"#",relevance_score:76},
+  {id:"8",title:"PE-fond kjøper norsk apotekjede for 1,2 milliarder",source:"Finansavisen",category:"M&A",published_at:"2026-02-16T08:00:00Z",summary:"Et nordisk PE-fond har fullført kjøpet av en regional apotekjede med 45 utsalgssteder i Sør-Norge.",url:"#",relevance_score:91},
 ];
 </script>
 </body>
