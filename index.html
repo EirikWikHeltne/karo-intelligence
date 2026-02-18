@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Karo Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #faf9f7;
+      --rule:     #e8e4de;
+      --rule-dk:  #d0cac0;
+      --ink-1:    #1a1714;
+      --ink-2:    #3d3830;
+      --ink-3:    #7a7268;
+      --ink-4:    #b5afa6;
+      --ink-5:    #d5d0c8;
+      --serif:    'Cormorant Garamond', 'Georgia', serif;
+      --mono:     'Geist Mono', 'Courier New', monospace;
+      --sans:     'Geist', system-ui, sans-serif;
+      --max:      960px;
+    }
+
+    html { font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--ink-2);
+      font-family: var(--sans);
+      font-weight: 300;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+    /* ── Masthead ── */
+    #masthead {
+      border-bottom: 2px solid var(--ink-1);
+      padding: 28px 0 16px;
+    }
+    .masthead-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .masthead-logo {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .masthead-date {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+    }
+    .masthead-title {
+      font-family: var(--serif);
+      font-size: clamp(36px, 5.5vw, 54px);
+      font-weight: 400;
+      line-height: 1.05;
+      color: var(--ink-1);
+      letter-spacing: -0.01em;
+    }
+    .masthead-title em { font-style: italic; }
+
+    /* ── Nav ── */
+    #nav-strip { border-bottom: 1px solid var(--rule); }
+    .nav-inner { display: flex; align-items: center; }
+    .nav-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 12px 20px 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .nav-btn:first-child { padding-left: 0; }
+    .nav-btn.active { color: var(--ink-1); border-bottom-color: var(--ink-1); }
+    .nav-btn:hover:not(.active) { color: var(--ink-2); }
+    .nav-sep { width: 1px; height: 12px; background: var(--rule-dk); margin: 0 4px; }
+
+    /* ── Category bar ── */
+    #cat-strip { border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
+    #cat-strip::-webkit-scrollbar { display: none; }
+    .cat-inner { display: flex; gap: 0; padding: 10px 0; white-space: nowrap; }
+    .cat-btn {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      padding: 4px 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      cursor: pointer;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cat-btn.active { background: var(--ink-1); color: var(--bg); border-color: var(--ink-1); }
+    .cat-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--rule-dk); }
+    .cat-n { font-size: 9px; opacity: 0.5; }
+    .cat-btn.active .cat-n { opacity: 0.65; }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      display: none;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--rule);
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    #toolbar.visible { display: flex; }
+    .search-wrap { flex: 1; min-width: 260px; position: relative; }
+    .search-icon { position: absolute; left: 0; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--ink-4); pointer-events: none; }
+    #search-input {
+      width: 100%; background: transparent;
+      border: none; border-bottom: 1px solid var(--rule-dk);
+      padding: 6px 0 6px 22px;
+      font-family: var(--sans); font-size: 13px; font-weight: 300;
+      color: var(--ink-1); outline: none; transition: border-color 0.15s;
+    }
+    #search-input::placeholder { color: var(--ink-4); }
+    #search-input:focus { border-bottom-color: var(--ink-1); }
+    .src-filters { display: flex; gap: 4px; flex-wrap: wrap; }
+    .src-btn {
+      background: none; border: 1px solid var(--rule-dk); border-radius: 2px;
+      padding: 4px 10px; font-family: var(--mono); font-size: 9px;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+      cursor: pointer; transition: all 0.12s;
+    }
+    .src-btn.active { background: var(--ink-1); border-color: var(--ink-1); color: var(--bg); }
+    .src-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--ink-2); }
+
+    /* ── Main ── */
+    #main { padding: 36px 0 80px; }
+    .section-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 28px; padding-bottom: 14px; border-bottom: 1px solid var(--rule);
+    }
+    .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-3); }
+    .section-count { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+
+    /* ── Featured ── */
+    .article-featured {
+      display: block; text-decoration: none;
+      padding: 28px 0; border-bottom: 1px solid var(--rule);
+      transition: opacity 0.15s;
+    }
+    .article-featured:hover { opacity: 0.7; }
+    .af-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .af-title {
+      font-family: var(--serif); font-size: clamp(22px, 3.5vw, 34px);
+      font-weight: 400; line-height: 1.2; color: var(--ink-1);
+      letter-spacing: -0.01em; margin-bottom: 12px;
+    }
+    .af-summary {
+      font-family: var(--serif); font-size: 16px; font-style: italic;
+      line-height: 1.65; color: var(--ink-3); max-width: 620px;
+    }
+
+    /* ── Article row ── */
+    .articles-list { display: flex; flex-direction: column; }
+    .article-row {
+      display: flex; gap: 20px; align-items: baseline;
+      padding: 18px 0; border-bottom: 1px solid var(--rule);
+      text-decoration: none; transition: opacity 0.12s;
+    }
+    .article-row:hover { opacity: 0.6; }
+    .article-row:last-child { border-bottom: none; }
+    .ar-idx { font-family: var(--mono); font-size: 10px; color: var(--ink-5); min-width: 20px; flex-shrink: 0; padding-top: 2px; }
+    .ar-body { flex: 1; min-width: 0; }
+    .ar-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .m-cat { font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-1); }
+    .m-dot { width: 2px; height: 2px; border-radius: 50%; background: var(--ink-5); flex-shrink: 0; }
+    .m-src { font-family: var(--mono); font-size: 9px; color: var(--ink-4); letter-spacing: 0.05em; }
+    .m-time { font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
+    .m-score { font-family: var(--mono); font-size: 9px; color: var(--ink-5); margin-left: auto; }
+    .ar-title { font-family: var(--serif); font-size: 18px; font-weight: 500; line-height: 1.3; color: var(--ink-1); margin-bottom: 4px; }
+    .ar-summary { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--ink-3); }
+
+    /* ── Stats ── */
+    .stats-row { display: none; gap: 40px; padding: 18px 0 24px; border-bottom: 1px solid var(--rule); }
+    .stats-row.visible { display: flex; }
+    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat-n { font-family: var(--mono); font-size: 20px; font-weight: 300; color: var(--ink-1); letter-spacing: -0.02em; }
+    .stat-l { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4); }
+
+    /* ── States ── */
+    .empty { padding: 80px 0; font-family: var(--mono); font-size: 10px; color: var(--ink-4); letter-spacing: 0.12em; text-transform: uppercase; }
+    .loading { padding: 60px 0; font-family: var(--mono); font-size: 10px; color: var(--ink-4); letter-spacing: 0.12em; text-transform: uppercase; }
+    @keyframes blink { 0%,100%{opacity:0.3}50%{opacity:1} }
+    .loading::after { content: "..."; animation: blink 1.2s ease infinite; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 2px solid var(--ink-1);
+      padding: 18px 0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-brand { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-4); }
+    .footer-note  { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
+
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)} }
+    .fade-in { animation: fadeIn 0.2s ease forwards; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header id="masthead">
+    <div class="masthead-top">
+      <div class="masthead-logo">Karo Healthcare · Markedsintelligens</div>
+      <div class="masthead-date" id="header-date"></div>
+    </div>
+    <h1 class="masthead-title">Dagens <em>brief</em></h1>
+  </header>
+
+  <div id="nav-strip">
+    <div class="nav-inner">
+      <button class="nav-btn active" onclick="switchView('today',this)">Dagens brief</button>
+      <div class="nav-sep"></div>
+      <button class="nav-btn" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
+    </div>
+  </div>
+
+  <div id="cat-strip">
+    <div class="cat-inner" id="cat-buttons"></div>
+  </div>
+
+  <div id="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input id="search-input" type="text" placeholder="Søk i titler og sammendrag…" oninput="applyFilters()" />
+    </div>
+    <div class="src-filters" id="source-filters"></div>
+  </div>
+
+  <main id="main">
+    <div class="section-header">
+      <span class="section-label" id="section-label">Siste 24 timer</span>
+      <span class="section-count" id="section-count"></span>
+    </div>
+    <div class="stats-row" id="stats-row"></div>
+    <div id="articles-container"><div class="loading">Laster nyheter</div></div>
+  </main>
+
+  <footer>
+    <span class="footer-brand">Karo Healthcare Norway</span>
+    <span class="footer-note">Intern · Ikke for distribusjon</span>
+  </footer>
+
+</div>
+
+<script>
+const SUPABASE_URL      = "https://DITT_PROSJEKT.supabase.co";
+const SUPABASE_ANON_KEY = "DIN_ANON_KEY";
+
+const CATEGORIES = [
+  {id:"all",label:"Alle"},{id:"M&A",label:"M&A"},{id:"apotek",label:"Apotek"},
+  {id:"dagligvare",label:"Dagligvare"},{id:"dermatologi",label:"Dermatologi"},
+  {id:"oral-care",label:"Oral Care"},{id:"konkurrenter",label:"Konkurrenter"},
+  {id:"regulatorisk",label:"Regulatorisk"},{id:"legemiddel",label:"Legemiddel"},
+  {id:"helsesektor",label:"Helsesektor"},{id:"annet",label:"Annet"},
+];
+const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2"];
+
+let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function loadArticles() {
+  document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
+  try {
+    let q = sb.from("articles").select("*").order("published_at",{ascending:false});
+    if (activeView==="today") q=q.gte("published_at", new Date(Date.now()-26*3600000).toISOString());
+    else q=q.limit(300);
+    const {data,error}=await q;
+    if(error) throw error;
+    allArticles=data||[];
+  } catch(e) {
+    console.warn("Demo-modus:",e.message);
+    allArticles=DEMO;
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  const q=(document.getElementById("search-input")?.value||"").toLowerCase();
+  const f=allArticles.filter(a=>{
+    if(activeCategory!=="all"&&a.category!==activeCategory) return false;
+    if(activeSource!=="Alle"&&a.source!==activeSource) return false;
+    if(q&&![a.title,a.summary,a.source].some(v=>(v||"").toLowerCase().includes(q))) return false;
+    return true;
+  });
+  renderCatBar(allArticles);
+  renderArticles(f);
+  document.getElementById("section-count").textContent=`${f.length} saker`;
+}
+
+function timeAgo(iso){
+  if(!iso) return "";
+  const h=Math.floor((Date.now()-new Date(iso))/3600000);
+  if(h<1) return "<1t"; if(h<24) return `${h}t`; const d=Math.floor(h/24);
+  return d===1?"i går":`${d}d`;
+}
+
+function renderCatBar(arts){
+  const c={};arts.forEach(a=>{c[a.category]=(c[a.category]||0)+1;});
+  document.getElementById("cat-buttons").innerHTML=CATEGORIES.map(cat=>{
+    const n=cat.id==="all"?arts.length:(c[cat.id]||0);
+    if(!n&&cat.id!=="all") return "";
+    const a=activeCategory===cat.id;
+    return `<button class="cat-btn${a?" active":""}" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
+  }).join("");
+}
+
+function renderArticles(arts){
+  const el=document.getElementById("articles-container");
+  const sr=document.getElementById("stats-row");
+  if(!arts.length){el.innerHTML='<div class="empty">Ingen saker funnet</div>';sr.classList.remove("visible");return;}
+
+  if(activeView==="archive"){
+    const srcs=new Set(arts.map(a=>a.source)).size;
+    const avg=Math.round(arts.reduce((s,a)=>s+(a.relevance_score||0),0)/arts.length);
+    sr.innerHTML=`<div class="stat"><span class="stat-n">${arts.length}</span><span class="stat-l">Artikler</span></div><div class="stat"><span class="stat-n">${srcs}</span><span class="stat-l">Kilder</span></div><div class="stat"><span class="stat-n">${avg}</span><span class="stat-l">Snitt-score</span></div>`;
+    sr.classList.add("visible");
+  } else sr.classList.remove("visible");
+
+  let html="";
+  const start=activeView==="today"?1:0;
+
+  if(activeView==="today"){
+    const f=arts[0];
+    html+=`<a class="article-featured fade-in" href="${f.url||"#"}" target="_blank">
+      <div class="af-meta"><span class="m-cat">${f.category||""}</span><span class="m-dot"></span><span class="m-src">${f.source||""}</span><span class="m-dot"></span><span class="m-time">${timeAgo(f.published_at)}</span></div>
+      <div class="af-title">${f.title||""}</div>
+      <div class="af-summary">${f.summary||""}</div>
+    </a>`;
+  }
+
+  html+=`<div class="articles-list">`;
+  arts.slice(start).forEach((a,i)=>{
+    html+=`<a class="article-row fade-in" href="${a.url||"#"}" target="_blank" style="animation-delay:${i*22}ms">
+      <span class="ar-idx">${String(i+start+1).padStart(2,"0")}</span>
+      <div class="ar-body">
+        <div class="ar-meta"><span class="m-cat">${a.category||""}</span><span class="m-dot"></span><span class="m-src">${a.source||""}</span><span class="m-dot"></span><span class="m-time">${timeAgo(a.published_at)}</span><span class="m-score">▲${a.relevance_score||""}</span></div>
+        <div class="ar-title">${a.title||""}</div>
+        <div class="ar-summary">${a.summary||""}</div>
+      </div>
+    </a>`;
+  });
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+function switchView(v,btn){
+  activeView=v;
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("toolbar").classList.toggle("visible",v==="archive");
+  const t=document.querySelector(".masthead-title");
+  t.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
+  document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
+  loadArticles();
+}
+function setCat(cat){activeCategory=cat;applyFilters();}
+function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
+
+document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
+  `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
+).join("");
+document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+loadArticles();
+
+const DEMO=[
+  {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie etter sterk etterspørsel",source:"E24",category:"apotek",published_at:"2026-02-18T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Eksem og tørr hud er de raskest voksende segmentene.",url:"#",relevance_score:92},
+  {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-18T07:45:00Z",summary:"KKR skal ifølge kilder vurdere strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg eller børsnotering i 2026–2027.",url:"#",relevance_score:97},
+  {id:"3",title:"Ny studie: Barrierekrem halverer eksemoppbluss hos barn",source:"NRK",category:"dermatologi",published_at:"2026-02-18T08:30:00Z",summary:"En norsk klinisk studie viser at daglig bruk av fuktighetsgivende barrierekrem reduserer eksemoppbluss med 52% hos barn under 5 år. Resultatene støtter økt bruk av OTC-produkter.",url:"#",relevance_score:88},
+  {id:"4",title:"Rema 1000 og NorgesGruppen kutter antall hudpleiebrands i 2026",source:"DN",category:"dagligvare",published_at:"2026-02-17T14:00:00Z",summary:"Begge de store dagligvarekjedene signaliserer en konsolidering av sortimentet der kun topp-2 brands per underkategori beholder hylleplass.",url:"#",relevance_score:85},
+  {id:"5",title:"Beiersdorf øker markedsbudsjettet for Eucerin i Norden med 40%",source:"Aftenposten",category:"konkurrenter",published_at:"2026-02-17T10:15:00Z",summary:"Beiersdorf bekrefter en kraftig økning i medietrykket for Eucerin-linjen i Skandinavia, med særlig fokus på digital og apotek-kanalen fremover.",url:"#",relevance_score:83},
+  {id:"6",title:"Legemiddelverket foreslår nye regler for OTC-markedsføring",source:"NRK",category:"regulatorisk",published_at:"2026-02-17T09:00:00Z",summary:"Legemiddelverket sender på høring forslag om strengere krav til dokumentasjon ved markedsføring av reseptfrie legemidler og grenseprodukter.",url:"#",relevance_score:79},
+  {id:"7",title:"Colgate-Palmolive melder svakere global vekst – Norden skiller seg ut",source:"E24",category:"oral-care",published_at:"2026-02-16T11:30:00Z",summary:"I kvartalsrapporten melder Colgate om flat volumvekst globalt, men Norden trekkes frem som unntak med positiv utvikling for premium tannpleieprodukter.",url:"#",relevance_score:76},
+  {id:"8",title:"PE-fond kjøper norsk apotekjede for 1,2 milliarder",source:"Finansavisen",category:"M&A",published_at:"2026-02-16T08:00:00Z",summary:"Et nordisk PE-fond har fullført kjøpet av en regional apotekjede med 45 utsalgssteder i Sør-Norge. Transaksjonen er ventet å påvirke innkjøpsforhandlingene for leverandørene.",url:"#",relevance_score:91},
+];
+</script>
+</body>
+</html>
