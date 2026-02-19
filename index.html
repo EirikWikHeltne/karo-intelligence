@@ -188,6 +188,7 @@
     .footer-brand { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-4); }
     .footer-note { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
 
+
     /* Add button */
     .add-btn {
       background: var(--ink-1); color: var(--bg); border: none; border-radius: 50%;
@@ -243,17 +244,17 @@
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
       <h1 class="masthead-title" id="page-title">Dagens <em>brief</em></h1>
-      <button class="add-btn" onclick="openAddModal()" title="Legg til artikkel">+</button>
+      <button class="add-btn" type="button" onclick="openAddModal()" title="Legg til artikkel" aria-label="Legg til artikkel">+</button>
     </div>
   </header>
 
   <div id="nav-strip">
     <div class="nav-inner">
-      <button class="nav-btn active" onclick="switchView('today',this)">Dagens brief</button>
+      <button class="nav-btn active" type="button" onclick="switchView('today',this)">Dagens brief</button>
       <div class="nav-sep"></div>
-      <button class="nav-btn" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
+      <button class="nav-btn" type="button" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
       <div class="nav-sep"></div>
-      <button class="nav-btn" onclick="switchView('sources',this)">Kilder &amp; kalibrering</button>
+      <button class="nav-btn" type="button" onclick="switchView('sources',this)">Kilder &amp; kalibrering</button>
     </div>
   </div>
 
@@ -316,7 +317,7 @@
 <!-- ── Edit article modal ── -->
 <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(26,23,20,0.55);padding:20px;align-items:center;justify-content:center;">
   <div style="background:var(--bg);max-width:520px;width:100%;border-radius:4px;padding:32px;position:relative;max-height:90vh;overflow-y:auto;">
-    <button onclick="closeEditModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
+    <button type="button" onclick="closeEditModal()" aria-label="Lukk redigeringsvindu" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
     <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;">Rediger artikkel</div>
     <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink-1);margin-bottom:24px;line-height:1.2;">Endre tittel,<br>kategori eller sammendrag</div>
 
@@ -369,15 +370,15 @@
     <div id="edit-status" style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:16px;min-height:16px;"></div>
 
     <div style="display:flex;gap:12px;">
-      <button id="edit-submit-btn" onclick="saveEdit()"
+      <button id="edit-submit-btn" type="button" onclick="saveEdit()"
         style="flex:1;background:var(--ink-1);color:var(--bg);border:none;border-radius:2px;padding:12px 24px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;">
         Lagre endringer
       </button>
-      <button onclick="deleteArticle()"
+      <button type="button" onclick="deleteArticle()"
         style="background:none;border:1px solid var(--red);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);cursor:pointer;">
         Slett
       </button>
-      <button onclick="closeEditModal()"
+      <button type="button" onclick="closeEditModal()"
         style="background:none;border:1px solid var(--rule-dk);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;">
         Avbryt
       </button>
@@ -388,7 +389,7 @@
 <!-- ── Add article modal ── -->
 <div id="add-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(26,23,20,0.55);padding:20px;align-items:center;justify-content:center;">
   <div style="background:var(--bg);max-width:520px;width:100%;border-radius:4px;padding:32px;position:relative;max-height:90vh;overflow-y:auto;">
-    <button onclick="closeAddModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
+    <button type="button" onclick="closeAddModal()" aria-label="Lukk legg til artikkel-vindu" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
     <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;">Legg til artikkel</div>
     <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink-1);margin-bottom:24px;line-height:1.2;">Lim inn en URL og<br>vi gjør resten</div>
 
@@ -444,11 +445,11 @@
     <div id="add-status" style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:16px;min-height:16px;"></div>
 
     <div style="display:flex;gap:12px;">
-      <button id="add-submit-btn" onclick="submitArticle()"
+      <button id="add-submit-btn" type="button" onclick="submitArticle()"
         style="flex:1;background:var(--ink-1);color:var(--bg);border:none;border-radius:2px;padding:12px 24px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;">
         Legg til artikkel
       </button>
-      <button onclick="closeAddModal()"
+      <button type="button" onclick="closeAddModal()"
         style="background:none;border:1px solid var(--rule-dk);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;">
         Avbryt
       </button>
@@ -458,13 +459,13 @@
 
 <!-- Mobile bottom nav -->
 <nav id="bottom-nav">
-  <button class="bn-btn active" onclick="switchView('today',this)" id="bn-today">
+  <button class="bn-btn active" type="button" onclick="switchView('today',this)" id="bn-today" aria-label="Vis dagens brief">
     <span class="bn-icon">📰</span>Brief
   </button>
-  <button class="bn-btn" onclick="switchView('archive',this)" id="bn-archive">
+  <button class="bn-btn" type="button" onclick="switchView('archive',this)" id="bn-archive" aria-label="Vis arkiv og søk">
     <span class="bn-icon">🗂</span>Arkiv
   </button>
-  <button class="bn-btn" onclick="switchView('sources',this)" id="bn-sources">
+  <button class="bn-btn" type="button" onclick="switchView('sources',this)" id="bn-sources" aria-label="Vis kilder og kalibrering">
     <span class="bn-icon">⚙️</span>Kilder
   </button>
 </nav>
@@ -560,10 +561,10 @@ function timeAgo(iso){
 function feedbackHtml(id, isManual){
   const v=feedback[id];
   return `<div class="ar-feedback">
-    <button class="fb-btn up${v==='up'?' voted':''}" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
-    <button class="fb-btn down${v==='down'?' voted':''}" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
+    <button class="fb-btn up${v==='up'?' voted':''}" type="button" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
+    <button class="fb-btn down${v==='down'?' voted':''}" type="button" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
     ${v?'<span class="fb-label">Lagret</span>':''}
-    <button class="fb-btn edit-btn" onclick="openEditModal('${id}')" title="Rediger">✎ Rediger</button>
+    <button class="fb-btn edit-btn" type="button" onclick="openEditModal('${id}')" title="Rediger">✎ Rediger</button>
   </div>`;
 }
 
@@ -629,7 +630,7 @@ function renderCatBar(arts){
     const n=cat.id==="all"?arts.length:(c[cat.id]||0);
     if(!n&&cat.id!=="all") return "";
     const a=activeCategory===cat.id;
-    return `<button class="cat-btn${a?" active":""}" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
+    return `<button class="cat-btn${a?" active":""}" type="button" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
   }).join("");
 }
 
@@ -680,7 +681,7 @@ function renderArticles(arts){
         <span class="m-time">${timeAgo(f.published_at)}</span>
         ${brand?`<span class="af-brand-badge">★ ${brand}</span>`:''}
       </div>
-      <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
+      <a href="${f.url||'#'}" target="_blank" rel="noopener noreferrer" class="af-title">${f.title||""}</a>
       <div class="af-summary">${f.summary||""}</div>
       ${feedbackHtml(f.id)}
     </div>`;
@@ -703,7 +704,7 @@ function renderArticles(arts){
           ${brand?`<span class="m-brand">★ ${brand}</span>`:''}
           <span class="m-score">▲${a.relevance_score||""}</span>
         </div>
-        <a href="${a.url||'#'}" target="_blank" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
+        <a href="${a.url||'#'}" target="_blank" rel="noopener noreferrer" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
         <div class="ar-summary">${a.summary||""}</div>
         ${feedbackHtml(a.id)}
       </div>
@@ -790,7 +791,7 @@ function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
-  `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
+  `<button class="src-btn${s==="Alle"?" active":""}" type="button" onclick="setSrc('${s}',this)">${s}</button>`
 ).join("");
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"});
 loadArticles();
