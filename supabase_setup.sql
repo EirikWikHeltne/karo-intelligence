@@ -28,3 +28,20 @@ CREATE POLICY "Service role full access"
   FOR ALL
   USING (true)
   WITH CHECK (true);
+
+-- Tillat oppdatering og sletting fra webapp (anon-nøkkel)
+-- NB: Siden appen er intern og ikke har innlogging, gir vi anon tilgang.
+-- Vurder å bytte til auth-basert tilgang hvis appen blir offentlig.
+CREATE POLICY IF NOT EXISTS "Anon update"
+  ON articles FOR UPDATE USING (true) WITH CHECK (true);
+
+CREATE POLICY IF NOT EXISTS "Anon delete"
+  ON articles FOR DELETE USING (true);
+
+-- Tillat anon å lese (for webapp)
+CREATE POLICY IF NOT EXISTS "Anon read"
+  ON articles FOR SELECT USING (true);
+
+-- Tillat anon å skrive (for manuell innsending)
+CREATE POLICY IF NOT EXISTS "Anon insert"
+  ON articles FOR INSERT WITH CHECK (true);
