@@ -150,7 +150,7 @@
     .stat-l { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4); }
 
     /* ── Sources page ── */
-    #sources-page { display: none; padding: 28px 0 80px; }
+    #sources-page { display: none; padding: 28px 0 80px; overflow-x: hidden; }
     #sources-page.visible { display: block; }
     .sources-section { margin-bottom: 44px; }
     .sources-section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
@@ -359,6 +359,12 @@ const KEYWORDS = [
   "legemiddel","farmasi","helsesektor","helsekost","kosttilskudd",
   "piller","pillebruk","pilleforbruk","medisinbruk","smertestillende","ibuprofen","paracetamol",
   "legemiddelforbruk","selvmedisinering","egenbehandling","Paracet","Ibux","Asan","Paralgin",
+  // English
+  "skincare","skin care","eczema","atopic","moisturizer","dermatology",
+  "oral care","toothpaste","mouthwash","dental",
+  "pharmacy","pharmacies","consumer health","over-the-counter",
+  "pharmaceutical","acquisition","merger","buyout",
+  "Beiersdorf","Colgate","Unilever","painkiller","pain relief",
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -575,16 +581,19 @@ function renderSourcesPage(){
 function switchView(v,btn){
   activeView=v;
 
-  // Desktop nav
+  // Desktop nav - sync all
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  if(btn.classList.contains("nav-btn")) btn.classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b=>{
+    if((v=="today"&&b.textContent.includes("brief"))||
+       (v=="archive"&&b.textContent.includes("Arkiv"))||
+       (v=="sources"&&b.textContent.includes("Kilder"))) b.classList.add("active");
+  });
 
-  // Mobile nav
+  // Mobile nav - sync all
   ["today","archive","sources"].forEach(id=>{
     document.getElementById(`bn-${id}`)?.classList.remove("active");
   });
   document.getElementById(`bn-${v}`)?.classList.add("active");
-  if(btn.classList.contains("bn-btn")) btn.classList.add("active");
 
   const mainEl=document.getElementById("main");
   const sourcesEl=document.getElementById("sources-page");
