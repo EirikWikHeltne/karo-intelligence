@@ -98,10 +98,14 @@ KEYWORDS = [
     "reklameforbudet", "merkevare", "brand",
     "TV-reklame", "reklamebransjen",
 
-    # Helse generelt
+    # Helse generelt & legemiddelforbruk
     "legemiddel", "farmasi", "helsesektor", "bioteknologi",
     "helsekost", "naturmiddel", "kosttilskudd",
     "eldrebølge", "kronisk sykdom",
+    "piller", "pillebruk", "pilleforbruk", "medisinbruk",
+    "smertestillende", "ibuprofen", "paracetamol", "reseptbelagt",
+    "legemiddelforbruk", "selvmedisinering", "egenbehandling",
+    "Paracet", "Ibux", "Asan", "Paralgin",
 ]
 
 CLAUDE_MODEL  = "claude-haiku-4-5-20251001"
@@ -174,6 +178,7 @@ Karo selger via apotek og dagligvare i Norge. Eid av PE-fondet KKR.
 Vurder om nyheten er relevant for Karo – DIREKTE eller INDIREKTE.
 
 Direkte relevante: hudpleie, eksem, tannpleie, apotek, OTC-legemidler, konkurrenter som Beiersdorf/Colgate, M&A i helsesektoren.
+Også direkte relevante: legemiddelforbruk, pillebruk, smertestillende, selvmedisinering – dette påvirker OTC-markedet Karo opererer i.
 
 Indirekte relevante (inkluder disse også):
 - Helsepolitikk og regulering som påvirker OTC-markedet
@@ -182,7 +187,7 @@ Indirekte relevante (inkluder disse også):
 - Markedsføring: nye regler, influencer-regler, digital reklame
 - Norsk økonomi som påvirker forbrukermarkedet
 - PE/M&A bredt i konsumentbransjen
-- Helsepolitikk og folkehelse
+- Folkehelse og forbrukernes helsevaner – økt eller redusert medisinbruk påvirker Karos marked
 
 Vær INKLUDERENDE – ved tvil, sett relevant=true med lav confidence.
 
