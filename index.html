@@ -139,6 +139,8 @@
     .fb-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 10px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; color: var(--ink-4); cursor: pointer; transition: all .12s; min-height: 28px; }
     .fb-btn:hover { color: var(--ink-2); border-color: var(--ink-3); }
     .fb-btn.up.voted { color: var(--green); border-color: var(--green); background: #2d6a4f0f; }
+    .fb-btn.edit-btn { margin-left: auto; color: var(--ink-4); }
+    .fb-btn.edit-btn:hover { color: var(--ink-1); border-color: var(--ink-2); }
     .fb-btn.down.voted { color: var(--red); border-color: var(--red); background: #8b1e1e0f; }
     .fb-label { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
 
@@ -309,6 +311,78 @@
     <span class="footer-note">Intern · Ikke for distribusjon</span>
   </footer>
 
+</div>
+
+<!-- ── Edit article modal ── -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(26,23,20,0.55);padding:20px;align-items:center;justify-content:center;">
+  <div style="background:var(--bg);max-width:520px;width:100%;border-radius:4px;padding:32px;position:relative;max-height:90vh;overflow-y:auto;">
+    <button onclick="closeEditModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;">Rediger artikkel</div>
+    <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink-1);margin-bottom:24px;line-height:1.2;">Endre tittel,<br>kategori eller sammendrag</div>
+
+    <input type="hidden" id="edit-id" />
+
+    <div style="margin-bottom:16px;">
+      <label style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:6px;">Tittel</label>
+      <input id="edit-title" type="text"
+        style="width:100%;border:none;border-bottom:1px solid var(--rule-dk);background:transparent;padding:8px 0;font-family:var(--sans);font-size:14px;color:var(--ink-1);outline:none;font-weight:300;" />
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div>
+        <label style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:6px;">Kilde</label>
+        <input id="edit-source" type="text"
+          style="width:100%;border:none;border-bottom:1px solid var(--rule-dk);background:transparent;padding:8px 0;font-family:var(--sans);font-size:14px;color:var(--ink-1);outline:none;font-weight:300;" />
+      </div>
+      <div>
+        <label style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:6px;">Kategori</label>
+        <select id="edit-category"
+          style="width:100%;border:none;border-bottom:1px solid var(--rule-dk);background:transparent;padding:8px 0;font-family:var(--sans);font-size:14px;color:var(--ink-1);outline:none;font-weight:300;appearance:none;">
+          <option value="annet">Annet</option>
+          <option value="M&A">M&A</option>
+          <option value="apotek">Apotek</option>
+          <option value="dagligvare">Dagligvare</option>
+          <option value="dermatologi">Dermatologi</option>
+          <option value="oral-care">Oral Care</option>
+          <option value="konkurrenter">Konkurrenter</option>
+          <option value="regulatorisk">Regulatorisk</option>
+          <option value="forbrukertrender">Forbrukertrender</option>
+          <option value="helsepolitikk">Helsepolitikk</option>
+          <option value="markedsføring">Markedsføring</option>
+          <option value="økonomi">Økonomi</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:6px;">Relevans-score <span style="opacity:0.5">1–100</span></label>
+      <input id="edit-score" type="number" min="1" max="100"
+        style="width:100%;border:none;border-bottom:1px solid var(--rule-dk);background:transparent;padding:8px 0;font-family:var(--sans);font-size:14px;color:var(--ink-1);outline:none;font-weight:300;" />
+    </div>
+
+    <div style="margin-bottom:24px;">
+      <label style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:6px;">Sammendrag</label>
+      <textarea id="edit-summary" rows="4"
+        style="width:100%;border:none;border-bottom:1px solid var(--rule-dk);background:transparent;padding:8px 0;font-family:var(--sans);font-size:14px;color:var(--ink-1);outline:none;font-weight:300;resize:vertical;"></textarea>
+    </div>
+
+    <div id="edit-status" style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:16px;min-height:16px;"></div>
+
+    <div style="display:flex;gap:12px;">
+      <button id="edit-submit-btn" onclick="saveEdit()"
+        style="flex:1;background:var(--ink-1);color:var(--bg);border:none;border-radius:2px;padding:12px 24px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;">
+        Lagre endringer
+      </button>
+      <button onclick="deleteArticle()"
+        style="background:none;border:1px solid var(--red);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);cursor:pointer;">
+        Slett
+      </button>
+      <button onclick="closeEditModal()"
+        style="background:none;border:1px solid var(--rule-dk);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;">
+        Avbryt
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ── Add article modal ── -->
@@ -483,12 +557,13 @@ function timeAgo(iso){
   const d=Math.floor(h/24); return d===1?"i går":`${d}d`;
 }
 
-function feedbackHtml(id){
+function feedbackHtml(id, isManual){
   const v=feedback[id];
   return `<div class="ar-feedback">
     <button class="fb-btn up${v==='up'?' voted':''}" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
     <button class="fb-btn down${v==='down'?' voted':''}" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
     ${v?'<span class="fb-label">Lagret</span>':''}
+    <button class="fb-btn edit-btn" onclick="openEditModal('${id}')" title="Rediger">✎ Rediger</button>
   </div>`;
 }
 
@@ -720,6 +795,99 @@ document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"});
 loadArticles();
 loadFeedback();
+
+// ── Edit article modal ───────────────────────────────────────────────────────
+function openEditModal(id){
+  const a = allArticles.find(a=>String(a.id)===String(id));
+  if(!a) return;
+
+  document.getElementById("edit-id").value       = a.id;
+  document.getElementById("edit-title").value    = a.title    || "";
+  document.getElementById("edit-source").value   = a.source   || "";
+  document.getElementById("edit-summary").value  = a.summary  || "";
+  document.getElementById("edit-score").value    = a.relevance_score || "";
+  document.getElementById("edit-status").textContent = "";
+  document.getElementById("edit-status").style.color = "var(--ink-3)";
+
+  // Set category dropdown
+  const sel = document.getElementById("edit-category");
+  sel.value = a.category || "annet";
+
+  document.getElementById("edit-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeEditModal(){
+  document.getElementById("edit-modal").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+async function saveEdit(){
+  const id       = document.getElementById("edit-id").value;
+  const title    = document.getElementById("edit-title").value.trim();
+  const source   = document.getElementById("edit-source").value.trim();
+  const category = document.getElementById("edit-category").value;
+  const summary  = document.getElementById("edit-summary").value.trim();
+  const score    = parseInt(document.getElementById("edit-score").value) || 0;
+  const statusEl = document.getElementById("edit-status");
+  const btn      = document.getElementById("edit-submit-btn");
+
+  if(!title){ statusEl.textContent = "⚠ Tittel kan ikke være tom."; return; }
+
+  btn.disabled = true; btn.style.opacity = "0.5";
+  statusEl.textContent = "Lagrer…";
+
+  try {
+    const { error } = await sb.from("articles").update({
+      title, source, category, summary,
+      relevance_score: score,
+    }).eq("id", id);
+
+    if(error) throw error;
+
+    // Update local state so UI reflects change immediately
+    const idx = allArticles.findIndex(a=>String(a.id)===String(id));
+    if(idx > -1){
+      allArticles[idx] = { ...allArticles[idx], title, source, category, summary, relevance_score: score };
+    }
+
+    statusEl.style.color = "var(--green)";
+    statusEl.textContent = "✓ Endringer lagret!";
+
+    setTimeout(()=>{ closeEditModal(); applyFilters(); }, 800);
+
+  } catch(e){
+    statusEl.style.color = "var(--red)";
+    statusEl.textContent = `Feil: ${e.message}`;
+    btn.disabled = false; btn.style.opacity = "1";
+  }
+}
+
+async function deleteArticle(){
+  const id = document.getElementById("edit-id").value;
+  const statusEl = document.getElementById("edit-status");
+
+  if(!confirm("Sikker på at du vil slette denne artikkelen?")) return;
+
+  try {
+    const { error } = await sb.from("articles").delete().eq("id", id);
+    if(error) throw error;
+
+    // Remove from local state
+    allArticles = allArticles.filter(a=>String(a.id)!==String(id));
+
+    closeEditModal();
+    applyFilters();
+  } catch(e){
+    statusEl.style.color = "var(--red)";
+    statusEl.textContent = `Slettefeil: ${e.message}`;
+  }
+}
+
+// Close on backdrop click
+document.getElementById("edit-modal").addEventListener("click", function(e){
+  if(e.target===this) closeEditModal();
+});
 
 // ── Add article modal ────────────────────────────────────────────────────────
 function openAddModal(){
