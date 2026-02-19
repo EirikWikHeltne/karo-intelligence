@@ -106,6 +106,18 @@ KEYWORDS = [
     "smertestillende", "ibuprofen", "paracetamol", "reseptbelagt",
     "legemiddelforbruk", "selvmedisinering", "egenbehandling",
     "Paracet", "Ibux", "Asan", "Paralgin",
+
+    # English keywords (Reuters, NYT, The Economist)
+    "skincare", "skin care", "eczema", "atopic", "moisturizer", "dermatology",
+    "oral care", "toothpaste", "mouthwash", "dental",
+    "pharmacy", "pharmacies", "drugstore", "OTC", "over-the-counter",
+    "consumer health", "healthcare", "pharma", "pharmaceutical",
+    "private equity", "acquisition", "merger", "buyout",
+    "Beiersdorf", "Colgate", "Unilever", "L Oreal", "Johnson Johnson",
+    "skincare market", "beauty market", "health market",
+    "painkiller", "pain relief", "ibuprofen", "acetaminophen",
+    "retail health", "health retail", "drug store",
+    "KKR", "Nordic Capital", "EQT",
 ]
 
 CLAUDE_MODEL  = "claude-haiku-4-5-20251001"
