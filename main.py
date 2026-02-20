@@ -39,6 +39,9 @@ RSS_FEEDS = {
     "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
                        "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
     "The Economist":  ["https://news.google.com/rss/search?q=site:economist.com+health+pharma+consumer&hl=en&gl=NO&ceid=NO:en"],
+    # Offentlige kilder
+    "FHI":            ["https://www.fhi.no/rss/nyheter/"],
+    "SSB":            ["https://www.ssb.no/rss/"],
 }
 
 KEYWORDS = [
