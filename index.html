@@ -231,6 +231,26 @@
       #nav-strip { display: none; }
       body { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
     }
+
+    /* ── Cookie consent ── */
+    #cookie-banner {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--ink-1); color: var(--bg);
+      border-radius: 4px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      z-index: 10000; width: calc(100% - 48px); max-width: 600px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+      transition: opacity .3s;
+    }
+    #cookie-banner p { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.5; color: var(--ink-4); flex: 1; min-width: 180px; margin: 0; }
+    .cookie-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-5); display: block; margin-bottom: 4px; }
+    .cookie-btn-accept {
+      background: var(--bg); color: var(--ink-1); border: none; border-radius: 2px;
+      padding: 8px 18px; font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+      flex-shrink: 0; transition: opacity .15s;
+    }
+    .cookie-btn-accept:hover { opacity: 0.8; }
   </style>
 </head>
 <body>
@@ -994,6 +1014,20 @@ document.getElementById("add-modal").addEventListener("click", function(e){
   if(e.target===this) closeAddModal();
 });
 
+// ── Cookie consent ────────────────────────────────────────────────────────────
+(function(){
+  if(!localStorage.getItem("karo-cookie-consent")){
+    document.getElementById("cookie-banner").style.display="flex";
+  }
+})();
+
+function acceptCookies(){
+  localStorage.setItem("karo-cookie-consent","1");
+  const el=document.getElementById("cookie-banner");
+  el.style.opacity="0";
+  setTimeout(()=>{ el.style.display="none"; }, 300);
+}
+
 // ── Demo data ─────────────────────────────────────────────────────────────────
 const DEMO=[
   {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie – Decubal blant vinnerne",source:"E24",category:"apotek",published_at:"2026-02-19T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Decubal trekkes frem som en av de sterkeste performerne.",url:"#",relevance_score:92},
@@ -1006,5 +1040,14 @@ const DEMO=[
   {id:"8",title:"PE-fond kjøper norsk apotekjede for 1,2 milliarder",source:"Finansavisen",category:"M&A",published_at:"2026-02-17T08:00:00Z",summary:"Et nordisk PE-fond har fullført kjøpet av en regional apotekjede med 45 utsalgssteder i Sør-Norge.",url:"#",relevance_score:91},
 ];
 </script>
+
+<div id="cookie-banner" style="display:none">
+  <div style="flex:1;min-width:180px">
+    <span class="cookie-label">Informasjonskapsler</span>
+    <p>Vi bruker informasjonskapsler for å huske preferanser og forbedre opplevelsen på dette interne verktøyet.</p>
+  </div>
+  <button class="cookie-btn-accept" onclick="acceptCookies()">Godta</button>
+</div>
+
 </body>
 </html>
