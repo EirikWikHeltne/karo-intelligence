@@ -77,15 +77,6 @@
     .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-3); }
     .section-count { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
 
-    /* ── Weekly summary banner ── */
-    .weekly-summary {
-      background: var(--ink-1); color: var(--bg);
-      border-radius: 3px; padding: 20px 24px; margin-bottom: 28px;
-    }
-    .ws-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; }
-    .ws-title { font-family: var(--serif); font-size: clamp(18px,3vw,24px); font-weight: 400; line-height: 1.25; color: var(--bg); margin-bottom: 10px; }
-    .ws-text { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.65; color: var(--ink-4); }
-
     /* ── Featured article ── */
     .article-featured { padding: 0 0 24px; border-bottom: 1px solid var(--rule); margin-bottom: 0; }
     .af-hero {
@@ -655,22 +646,6 @@ function renderCatBar(arts){
   }).join("");
 }
 
-// ── Weekly summary ────────────────────────────────────────────────────────────
-async function loadWeeklySummary(){
-  try{
-    const{data}=await sb.from("weekly_summaries").select("*").order("created_at",{ascending:false}).limit(1);
-    if(data&&data.length){
-      const ws=data[0];
-      const el=document.getElementById("weekly-summary-slot");
-      if(el) el.innerHTML=`<div class="weekly-summary fade-in">
-        <div class="ws-label">Ukens oppsummering · ${new Date(ws.created_at).toLocaleDateString("nb-NO",{day:"numeric",month:"long"})}</div>
-        <div class="ws-title">${ws.title||"Ukens viktigste"}</div>
-        <div class="ws-text">${ws.summary||""}</div>
-      </div>`;
-    }
-  }catch(e){}
-}
-
 // ── Render articles ───────────────────────────────────────────────────────────
 function renderArticles(arts){
   const el=document.getElementById("articles-container");
@@ -684,7 +659,7 @@ function renderArticles(arts){
     sr.classList.add("visible");
   } else sr.classList.remove("visible");
 
-  let html='<div id="weekly-summary-slot"></div>';
+  let html='';
   const start=activeView==="today"?1:0;
 
   // Featured
@@ -734,7 +709,6 @@ function renderArticles(arts){
   html+=`</div>`;
   el.innerHTML=html;
 
-  if(activeView==="today") loadWeeklySummary();
 }
 
 // ── Calibration ───────────────────────────────────────────────────────────────
