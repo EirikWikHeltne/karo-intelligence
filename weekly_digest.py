@@ -53,6 +53,19 @@ Svar KUN med gyldig JSON i dette formatet (ingen markdown, ingen forklaring):
     )
 
     text = response.content[0].text.strip()
+
+    # Strip markdown code fences if Claude wraps response in ```json ... ```
+    if "```" in text:
+        text = text.split("```")[-2] if text.count("```") >= 2 else text
+        text = text.lstrip("json").strip()
+
+    # Extract JSON object if there's surrounding text
+    start = text.find("{")
+    end   = text.rfind("}") + 1
+    if start == -1 or end == 0:
+        raise ValueError(f"Ingen JSON funnet i Claude-svar: {text[:200]}")
+    text = text[start:end]
+
     return json.loads(text)
 
 
