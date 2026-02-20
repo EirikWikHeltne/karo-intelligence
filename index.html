@@ -103,15 +103,15 @@
       text-transform: uppercase; color: rgba(255,255,255,0.85);
       background: rgba(26,23,20,0.45); padding: 3px 8px; border-radius: 2px;
     }
-    .af-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .af-title { font-family: var(--serif); font-size: clamp(22px, 4.5vw, 36px); font-weight: 400; line-height: 1.16; color: var(--ink-1); letter-spacing: -0.01em; margin-bottom: 12px; text-decoration: none; display: block; transition: opacity .15s; }
+    .af-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .af-title { font-family: var(--serif); font-size: clamp(22px, 4.5vw, 36px); font-weight: 400; line-height: 1.18; color: var(--ink-1); letter-spacing: -0.01em; margin-bottom: 10px; text-decoration: none; display: block; transition: opacity .15s; }
     .af-title:hover { opacity: 0.7; }
-    .af-summary { font-family: var(--serif); font-size: 15px; font-style: italic; line-height: 1.68; color: var(--ink-2); max-width: 620px; }
+    .af-summary { font-family: var(--serif); font-size: 15px; font-style: italic; line-height: 1.65; color: var(--ink-3); max-width: 620px; }
     .af-brand-badge { display: inline-flex; align-items: center; gap: 4px; background: #1a1714; color: #faf9f7; font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; }
 
     /* ── Article rows ── */
     .articles-list { display: flex; flex-direction: column; }
-    .article-row { display: flex; gap: 14px; align-items: flex-start; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+    .article-row { display: flex; gap: 14px; align-items: flex-start; padding: 16px 0; border-bottom: 1px solid var(--rule); }
     .article-row:last-child { border-bottom: none; }
     .ar-img {
       width: 80px; height: 60px; border-radius: 2px; flex-shrink: 0;
@@ -123,23 +123,23 @@
     .ar-body { flex: 1; min-width: 0; }
     .ar-title-link { text-decoration: none; display: block; transition: opacity .12s; }
     .ar-title-link:hover { opacity: 0.65; }
-    .ar-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+    .ar-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
     .m-cat { font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-1); }
     .m-dot { width: 2px; height: 2px; border-radius: 50%; background: var(--ink-5); flex-shrink: 0; }
-    .m-src { font-family: var(--mono); font-size: 9px; color: var(--ink-3); }
-    .m-time { font-family: var(--mono); font-size: 9px; color: var(--ink-3); }
+    .m-src { font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
+    .m-time { font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
     .m-score { font-family: var(--mono); font-size: 9px; color: var(--ink-5); margin-left: auto; }
     .m-brand { display: inline-block; background: var(--ink-1); color: var(--bg); font-family: var(--mono); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 5px; border-radius: 2px; }
-    .ar-title { font-family: var(--serif); font-size: clamp(15px,2.5vw,18px); font-weight: 500; line-height: 1.3; color: var(--ink-1); margin-bottom: 5px; }
-    .ar-summary { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.58; color: var(--ink-2); display: none; }
+    .ar-title { font-family: var(--serif); font-size: clamp(15px,2.5vw,18px); font-weight: 500; line-height: 1.3; color: var(--ink-1); margin-bottom: 3px; }
+    .ar-summary { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.55; color: var(--ink-3); display: none; }
     @media(min-width: 600px) { .ar-summary { display: block; } }
 
     /* ── Feedback ── */
-    .ar-feedback { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
-    .fb-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 10px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; color: var(--ink-3); cursor: pointer; transition: all .12s; min-height: 28px; }
+    .ar-feedback { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+    .fb-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 10px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; color: var(--ink-4); cursor: pointer; transition: all .12s; min-height: 28px; }
     .fb-btn:hover { color: var(--ink-2); border-color: var(--ink-3); }
     .fb-btn.up.voted { color: var(--green); border-color: var(--green); background: #2d6a4f0f; }
-    .fb-btn.edit-btn { margin-left: auto; color: var(--ink-3); }
+    .fb-btn.edit-btn { margin-left: auto; color: var(--ink-4); }
     .fb-btn.edit-btn:hover { color: var(--ink-1); border-color: var(--ink-2); }
     .fb-btn.down.voted { color: var(--red); border-color: var(--red); background: #8b1e1e0f; }
     .fb-label { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
@@ -186,9 +186,7 @@
     /* ── Footer ── */
     footer { border-top: 2px solid var(--ink-1); padding: 16px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .footer-brand { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-4); }
-    .footer-note { font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
-
-
+    .footer-note { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
 
     /* Add button */
     .add-btn {
@@ -221,7 +219,7 @@
       align-items: center; gap: 3px; min-height: 52px;
       -webkit-tap-highlight-color: transparent;
     }
-    .bn-btn.active { color: var(--ink-1); border-top-color: var(--ink-1); background: #f3f0ea; }
+    .bn-btn.active { color: var(--ink-1); border-top-color: var(--ink-1); }
     .bn-icon { font-size: 18px; line-height: 1; }
     /* On wider screens: hide bottom nav, show top nav */
     @media(min-width: 700px) {
@@ -245,17 +243,17 @@
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
       <h1 class="masthead-title" id="page-title">Dagens <em>brief</em></h1>
-      <button class="add-btn" type="button" onclick="openAddModal()" title="Legg til artikkel" aria-label="Legg til artikkel">+</button>
+      <button class="add-btn" onclick="openAddModal()" title="Legg til artikkel">+</button>
     </div>
   </header>
 
   <div id="nav-strip">
     <div class="nav-inner">
-      <button class="nav-btn active" type="button" onclick="switchView('today',this)">Dagens brief</button>
+      <button class="nav-btn active" onclick="switchView('today',this)">Dagens brief</button>
       <div class="nav-sep"></div>
-      <button class="nav-btn" type="button" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
+      <button class="nav-btn" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
       <div class="nav-sep"></div>
-      <button class="nav-btn" type="button" onclick="switchView('sources',this)">Kilder &amp; kalibrering</button>
+      <button class="nav-btn" onclick="switchView('sources',this)">Kilder &amp; kalibrering</button>
     </div>
   </div>
 
@@ -318,7 +316,7 @@
 <!-- ── Edit article modal ── -->
 <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(26,23,20,0.55);padding:20px;align-items:center;justify-content:center;">
   <div style="background:var(--bg);max-width:520px;width:100%;border-radius:4px;padding:32px;position:relative;max-height:90vh;overflow-y:auto;">
-    <button type="button" onclick="closeEditModal()" aria-label="Lukk redigeringsvindu" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
+    <button onclick="closeEditModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
     <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;">Rediger artikkel</div>
     <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink-1);margin-bottom:24px;line-height:1.2;">Endre tittel,<br>kategori eller sammendrag</div>
 
@@ -371,15 +369,15 @@
     <div id="edit-status" style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:16px;min-height:16px;"></div>
 
     <div style="display:flex;gap:12px;">
-      <button id="edit-submit-btn" type="button" onclick="saveEdit()"
+      <button id="edit-submit-btn" onclick="saveEdit()"
         style="flex:1;background:var(--ink-1);color:var(--bg);border:none;border-radius:2px;padding:12px 24px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;">
         Lagre endringer
       </button>
-      <button type="button" onclick="deleteArticle()"
+      <button onclick="deleteArticle()"
         style="background:none;border:1px solid var(--red);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);cursor:pointer;">
         Slett
       </button>
-      <button type="button" onclick="closeEditModal()"
+      <button onclick="closeEditModal()"
         style="background:none;border:1px solid var(--rule-dk);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;">
         Avbryt
       </button>
@@ -390,7 +388,7 @@
 <!-- ── Add article modal ── -->
 <div id="add-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(26,23,20,0.55);padding:20px;align-items:center;justify-content:center;">
   <div style="background:var(--bg);max-width:520px;width:100%;border-radius:4px;padding:32px;position:relative;max-height:90vh;overflow-y:auto;">
-    <button type="button" onclick="closeAddModal()" aria-label="Lukk legg til artikkel-vindu" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
+    <button onclick="closeAddModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:var(--ink-3);cursor:pointer;line-height:1;">×</button>
     <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;">Legg til artikkel</div>
     <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink-1);margin-bottom:24px;line-height:1.2;">Lim inn en URL og<br>vi gjør resten</div>
 
@@ -446,11 +444,11 @@
     <div id="add-status" style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:16px;min-height:16px;"></div>
 
     <div style="display:flex;gap:12px;">
-      <button id="add-submit-btn" type="button" onclick="submitArticle()"
+      <button id="add-submit-btn" onclick="submitArticle()"
         style="flex:1;background:var(--ink-1);color:var(--bg);border:none;border-radius:2px;padding:12px 24px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;">
         Legg til artikkel
       </button>
-      <button type="button" onclick="closeAddModal()"
+      <button onclick="closeAddModal()"
         style="background:none;border:1px solid var(--rule-dk);border-radius:2px;padding:12px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;">
         Avbryt
       </button>
@@ -460,13 +458,13 @@
 
 <!-- Mobile bottom nav -->
 <nav id="bottom-nav">
-  <button class="bn-btn active" type="button" onclick="switchView('today',this)" id="bn-today" aria-label="Vis dagens brief">
+  <button class="bn-btn active" onclick="switchView('today',this)" id="bn-today">
     <span class="bn-icon">📰</span>Brief
   </button>
-  <button class="bn-btn" type="button" onclick="switchView('archive',this)" id="bn-archive" aria-label="Vis arkiv og søk">
+  <button class="bn-btn" onclick="switchView('archive',this)" id="bn-archive">
     <span class="bn-icon">🗂</span>Arkiv
   </button>
-  <button class="bn-btn" type="button" onclick="switchView('sources',this)" id="bn-sources" aria-label="Vis kilder og kalibrering">
+  <button class="bn-btn" onclick="switchView('sources',this)" id="bn-sources">
     <span class="bn-icon">⚙️</span>Kilder
   </button>
 </nav>
@@ -495,7 +493,7 @@ const CAT_MAP = Object.fromEntries(CATEGORIES.map(c=>[c.id,c]));
 
 const KARO_BRANDS = ["Decubal","Locobase","Apobase","Flux"];
 
-const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Reuters","NYT","The Economist"];
+const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Reuters","NYT","The Economist","FHI","SSB"];
 
 const RSS_FEEDS = {
   "VG":             ["https://www.vg.no/rss/feed/forsiden/","https://www.vg.no/rss/feed/?categories=1069"],
@@ -512,6 +510,8 @@ const RSS_FEEDS = {
   "Reuters":        ["https://feeds.reuters.com/reuters/businessNews","https://feeds.reuters.com/reuters/healthNews"],
   "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml","https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
   "The Economist":  ["https://news.google.com/rss/search?q=site:economist.com+health+pharma+consumer&hl=en&gl=NO&ceid=NO:en"],
+  "FHI":            ["https://www.fhi.no/rss/nyheter/"],
+  "SSB":            ["https://www.ssb.no/rss/"],
 };
 
 const KEYWORDS = [
@@ -562,10 +562,10 @@ function timeAgo(iso){
 function feedbackHtml(id, isManual){
   const v=feedback[id];
   return `<div class="ar-feedback">
-    <button class="fb-btn up${v==='up'?' voted':''}" type="button" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
-    <button class="fb-btn down${v==='down'?' voted':''}" type="button" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
+    <button class="fb-btn up${v==='up'?' voted':''}" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
+    <button class="fb-btn down${v==='down'?' voted':''}" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
     ${v?'<span class="fb-label">Lagret</span>':''}
-    <button class="fb-btn edit-btn" type="button" onclick="openEditModal('${id}')" title="Rediger">✎ Rediger</button>
+    <button class="fb-btn edit-btn" onclick="openEditModal('${id}')" title="Rediger">✎ Rediger</button>
   </div>`;
 }
 
@@ -631,7 +631,7 @@ function renderCatBar(arts){
     const n=cat.id==="all"?arts.length:(c[cat.id]||0);
     if(!n&&cat.id!=="all") return "";
     const a=activeCategory===cat.id;
-    return `<button class="cat-btn${a?" active":""}" type="button" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
+    return `<button class="cat-btn${a?" active":""}" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
   }).join("");
 }
 
@@ -682,7 +682,7 @@ function renderArticles(arts){
         <span class="m-time">${timeAgo(f.published_at)}</span>
         ${brand?`<span class="af-brand-badge">★ ${brand}</span>`:''}
       </div>
-      <a href="${f.url||'#'}" target="_blank" rel="noopener noreferrer" class="af-title">${f.title||""}</a>
+      <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
       <div class="af-summary">${f.summary||""}</div>
       ${feedbackHtml(f.id)}
     </div>`;
@@ -705,7 +705,7 @@ function renderArticles(arts){
           ${brand?`<span class="m-brand">★ ${brand}</span>`:''}
           <span class="m-score">▲${a.relevance_score||""}</span>
         </div>
-        <a href="${a.url||'#'}" target="_blank" rel="noopener noreferrer" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
+        <a href="${a.url||'#'}" target="_blank" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
         <div class="ar-summary">${a.summary||""}</div>
         ${feedbackHtml(a.id)}
       </div>
@@ -792,7 +792,7 @@ function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
-  `<button class="src-btn${s==="Alle"?" active":""}" type="button" onclick="setSrc('${s}',this)">${s}</button>`
+  `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
 ).join("");
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"});
 loadArticles();
