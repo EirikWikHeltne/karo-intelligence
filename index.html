@@ -342,10 +342,21 @@
       .modal-btn-primary, .modal-btn-danger, .modal-btn-secondary {
         width: 100%; min-height: 48px; padding: 14px 24px; font-size: 12px;
       }
-      .modal-input, select.modal-input, textarea.modal-input { font-size: 16px; }
+      /* Prevent iOS zoom on every text input on the page */
+      .modal-input, select.modal-input, textarea.modal-input,
+      #search-input { font-size: 16px; }
       .modal-close { top: 8px; right: 12px; }
       .modal-header-title { font-size: 20px; }
-      .fb-btn { min-height: 40px; padding: 6px 12px; }
+
+      /* Bigger touch targets + more readable text for feedback row */
+      .fb-btn { min-height: 44px; padding: 8px 14px; font-size: 11px; }
+      .fb-label { font-size: 11px; }
+
+      /* Larger article meta labels on mobile */
+      .m-cat, .m-src, .m-time, .m-score { font-size: 11px; }
+
+      /* Slightly larger article titles on mobile */
+      .ar-title { font-size: 16px; }
     }
   </style>
 </head>
