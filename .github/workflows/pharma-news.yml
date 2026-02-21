@@ -2,8 +2,10 @@ name: Pharma News Agent
 
 on:
   schedule:
-    # Daglig agent: kl. 07:00 norsk tid (06:00 UTC) mandag–fredag
+    # Morgen: kl. 07:00 norsk tid (06:00 UTC) mandag–fredag
     - cron: "0 6 * * 1-5"
+    # Ettermiddag: kl. 13:00 norsk tid (12:00 UTC) mandag–fredag
+    - cron: "0 12 * * 1-5"
     # Ukesdigest: fredag kl. 08:00 norsk tid (07:00 UTC)
     - cron: "0 7 * * 5"
   workflow_dispatch:
