@@ -358,9 +358,75 @@
       /* Slightly larger article titles on mobile */
       .ar-title { font-size: 16px; }
     }
+
+    /* ── Splash screen ── */
+    #splash {
+      position: fixed; inset: 0; z-index: 99999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #splash { display: none; }
+    }
+    .splash-inner {
+      display: flex; flex-direction: column; align-items: center;
+      user-select: none;
+    }
+    .splash-rule {
+      height: 1px; background: var(--ink-1); width: 0;
+    }
+    .splash-rule-top {
+      margin-bottom: 20px;
+      animation: splashRuleGrow 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both;
+    }
+    .splash-rule-bottom {
+      margin-top: 16px;
+      animation: splashRuleGrow 0.55s cubic-bezier(0.16,1,0.3,1) 0.28s both;
+    }
+    @keyframes splashRuleGrow {
+      from { width: 0; }
+      to   { width: min(160px, 40vw); }
+    }
+    #splash-logo {
+      font-family: var(--serif);
+      font-size: clamp(64px, 15vw, 104px);
+      font-weight: 400; font-style: italic;
+      color: var(--ink-1); letter-spacing: -0.02em; line-height: 1;
+      clip-path: inset(0 0 100% 0);
+      animation: splashReveal 0.65s cubic-bezier(0.16,1,0.3,1) 0.3s both;
+    }
+    @keyframes splashReveal {
+      to { clip-path: inset(0 0 -5% 0); }
+    }
+    #splash-tagline {
+      font-family: var(--mono);
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--ink-4);
+      opacity: 0;
+      animation: splashFadeIn 0.5s ease 0.82s both;
+    }
+    @keyframes splashFadeIn {
+      to { opacity: 1; }
+    }
+    #splash.exit {
+      animation: splashExit 0.75s cubic-bezier(0.76,0,0.24,1) 0.05s both;
+    }
+    @keyframes splashExit {
+      to { transform: translateY(-100%); }
+    }
   </style>
 </head>
 <body>
+
+<div id="splash" aria-hidden="true">
+  <div class="splash-inner">
+    <div class="splash-rule splash-rule-top"></div>
+    <div id="splash-logo">Karo</div>
+    <div id="splash-tagline">Markedsintelligens</div>
+    <div class="splash-rule splash-rule-bottom"></div>
+  </div>
+</div>
+
 <div class="shell">
 
   <header id="masthead">
@@ -1096,6 +1162,17 @@ function acceptCookies(){
 }
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
+// ── Splash ────────────────────────────────────────────────────────────────────
+(function(){
+  var sp = document.getElementById("splash");
+  if(!sp) return;
+  setTimeout(function(){
+    sp.classList.add("exit");
+    var fallback = setTimeout(function(){ sp.remove(); }, 1000);
+    sp.addEventListener("animationend", function(){ clearTimeout(fallback); sp.remove(); }, {once:true});
+  }, 1800);
+})();
+
 const DEMO=[
   {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie – Decubal blant vinnerne",source:"E24",category:"apotek",published_at:"2026-02-19T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Decubal trekkes frem som en av de sterkeste performerne.",url:"#",relevance_score:92},
   {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-19T07:45:00Z",summary:"KKR vurderer strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg eller børsnotering i 2026–2027.",url:"#",relevance_score:97},
