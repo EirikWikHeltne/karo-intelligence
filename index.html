@@ -416,6 +416,11 @@
       to { transform: translateY(-100%); }
     }
   </style>
+  <!-- Vercel Web Analytics -->
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -709,7 +714,7 @@ const KEYWORDS = [
   "Beiersdorf","Colgate","Unilever","painkiller","pain relief",
 ];
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ── State ──────────────────���──────────────────────────────────────────────────
 let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all";
 const feedback={};
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
