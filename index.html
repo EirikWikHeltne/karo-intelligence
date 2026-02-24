@@ -365,6 +365,8 @@
       position: fixed; inset: 0; z-index: 99999;
       background: var(--bg);
       display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      animation: splashExit 0.75s cubic-bezier(0.76,0,0.24,1) 1.8s forwards;
     }
     @media (prefers-reduced-motion: reduce) {
       #splash { display: none; }
@@ -409,11 +411,9 @@
     @keyframes splashFadeIn {
       to { opacity: 1; }
     }
-    #splash.exit {
-      animation: splashExit 0.75s cubic-bezier(0.76,0,0.24,1) 0.05s both;
-    }
     @keyframes splashExit {
-      to { transform: translateY(-100%); }
+      from { transform: translateY(0); }
+      to   { transform: translateY(-100%); }
     }
   </style>
 </head>
@@ -1180,11 +1180,7 @@ function acceptCookies(){
 // ── Splash ────────────────────────────────────────────────────────────────────
 (function(){
   var sp = document.getElementById("splash");
-  if(!sp) return;
-  setTimeout(function(){
-    sp.classList.add("exit");
-    setTimeout(function(){ sp.remove(); }, 900);
-  }, 1800);
+  if(sp) setTimeout(function(){ sp.remove(); }, 3000);
 })();
 
 const DEMO=[
