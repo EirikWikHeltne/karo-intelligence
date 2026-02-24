@@ -624,6 +624,11 @@
       </div>
     </div>
 
+    <div class="modal-field">
+      <label class="modal-field-label">Publiseringsdato</label>
+      <input id="add-published" type="datetime-local" class="modal-input" />
+    </div>
+
     <div class="modal-field-last">
       <label class="modal-field-label">Notat <span style="opacity:0.5">(valgfritt)</span></label>
       <textarea id="add-note" rows="2" placeholder="Hvorfor er dette relevant for Karo?"
@@ -659,17 +664,17 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ── Category config with cover images ─────────────────────────────────────────
 const CATEGORIES = [
   {id:"all",       label:"Alle"},
-  {id:"M&A",       label:"M&A",             img:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&q=80"},
+  {id:"M&A",       label:"M&A",             img:"https://images.unsplash.com/photo-1521791136064-7986c2920216?w=900&q=80"},
   {id:"apotek",    label:"Apotek",           img:"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=900&q=80"},
-  {id:"dagligvare",label:"Dagligvare",       img:"https://images.unsplash.com/photo-1604719312566-8912e9c8a213?w=900&q=80"},
+  {id:"dagligvare",label:"Dagligvare",       img:"https://images.unsplash.com/photo-1542838132-92c53300491e?w=900&q=80"},
   {id:"dermatologi",label:"Dermatologi",     img:"https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=900&q=80"},
   {id:"oral-care", label:"Oral Care",        img:"https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=900&q=80"},
-  {id:"konkurrenter",label:"Konkurrenter",   img:"https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&q=80"},
+  {id:"konkurrenter",label:"Konkurrenter",   img:"https://images.unsplash.com/photo-1552664730-d307ca884978?w=900&q=80"},
   {id:"regulatorisk",label:"Regulatorisk",   img:"https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=900&q=80"},
   {id:"forbrukertrender",label:"Forbrukertrender",img:"https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80"},
   {id:"helsepolitikk",label:"Helsepolitikk", img:"https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=900&q=80"},
   {id:"markedsføring",label:"Markedsføring", img:"https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=900&q=80"},
-  {id:"økonomi",   label:"Økonomi",          img:"https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&q=80"},
+  {id:"økonomi",   label:"Økonomi",          img:"https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=900&q=80"},
   {id:"annet",     label:"Annet",            img:"https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=900&q=80"},
 ];
 const CAT_MAP = Object.fromEntries(CATEGORIES.map(c=>[c.id,c]));
@@ -748,6 +753,14 @@ function formatTime(iso){
   const opts={day:"numeric",month:"short"};
   if(d.getFullYear()!==now.getFullYear()) opts.year="numeric";
   return d.toLocaleDateString("nb-NO",opts)+` · ${t}`;
+}
+
+function formatDateFull(iso){
+  if(!iso) return "";
+  const d=new Date(iso);
+  const pad=n=>String(n).padStart(2,"0");
+  const t=`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return d.toLocaleDateString("nb-NO",{day:"numeric",month:"short",year:"numeric"})+` · ${t}`;
 }
 
 function toDatetimeLocal(iso){
@@ -876,6 +889,7 @@ function renderArticles(arts){
   arts.slice(start).forEach((a,i)=>{
     const img=a.image_url||categoryImg(a.category);
     const brand=mentionsBrand((a.title||"")+(a.summary||"")+(a.ingress||""));
+    const timeStr=activeView==="archive"?formatDateFull(a.published_at):formatTime(a.published_at);
     html+=`<div class="article-row fade-in" style="animation-delay:${i*18}ms">
       <span class="ar-idx">${String(i+start+1).padStart(2,"0")}</span>
       <div class="ar-img" style="background-image:url('${img}')"></div>
@@ -885,7 +899,7 @@ function renderArticles(arts){
           <span class="m-dot"></span>
           <span class="m-src">${a.source||""}</span>
           <span class="m-dot"></span>
-          <span class="m-time">${formatTime(a.published_at)}</span>
+          <span class="m-time">${timeStr}</span>
           ${brand?`<span class="m-brand">★ ${brand}</span>`:''}
           <span class="m-score">▲${a.relevance_score||""}</span>
         </div>
@@ -1087,6 +1101,7 @@ function openAddModal(){
   document.getElementById("add-modal").style.display="flex";
   document.getElementById("add-url").focus();
   document.body.style.overflow="hidden";
+  document.getElementById("add-published").value=toDatetimeLocal(new Date().toISOString());
 }
 
 function closeAddModal(){
@@ -1094,7 +1109,7 @@ function closeAddModal(){
   document.body.style.overflow="";
   resetAddForm();
   // clear fields
-  ["add-url","add-title","add-source","add-note"].forEach(id=>{
+  ["add-url","add-title","add-source","add-note","add-published"].forEach(id=>{
     document.getElementById(id).value="";
   });
   document.getElementById("add-category").value="annet";
@@ -1137,6 +1152,7 @@ async function submitArticle(){
   const source   = document.getElementById("add-source").value.trim();
   const category = document.getElementById("add-category").value;
   const note     = document.getElementById("add-note").value.trim();
+  const pubRaw   = document.getElementById("add-published").value;
   const statusEl = document.getElementById("add-status");
   const btn      = document.getElementById("add-submit-btn");
 
@@ -1157,7 +1173,7 @@ async function submitArticle(){
       source:          source || guessSource(url) || "Manuell",
       category,
       summary,
-      published_at:    new Date().toISOString(),
+      published_at:    pubRaw ? new Date(pubRaw).toISOString() : new Date().toISOString(),
       relevance_score: 95,   // manuelt innsendte er alltid høy relevans
       ingress:         "",
     }, {on_conflict:"url", ignore_duplicates:false}).select();
