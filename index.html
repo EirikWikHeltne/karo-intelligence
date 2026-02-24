@@ -67,9 +67,10 @@
     #search-input::placeholder { color: var(--ink-4); }
     #search-input:focus { border-bottom-color: var(--ink-1); }
     .src-filters { display: flex; gap: 4px; flex-wrap: wrap; }
-    .src-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 8px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; }
-    .src-btn.active { background: var(--ink-1); border-color: var(--ink-1); color: var(--bg); }
-    .src-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--ink-2); }
+    .src-btn, .date-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 8px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; }
+    .src-btn.active, .date-btn.active { background: var(--ink-1); border-color: var(--ink-1); color: var(--bg); }
+    .src-btn:hover:not(.active), .date-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--ink-2); }
+    .date-filters { display: flex; gap: 4px; flex-wrap: wrap; width: 100%; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--rule); }
 
     /* ── Main ── */
     #main { padding: 28px 0 80px; }
@@ -460,6 +461,7 @@
       <input id="search-input" type="text" placeholder="Søk…" oninput="applyFilters()" />
     </div>
     <div class="src-filters" id="source-filters"></div>
+    <div class="date-filters" id="date-filters"></div>
   </div>
 
   <main id="main">
@@ -708,7 +710,7 @@ const KEYWORDS = [
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle";
+let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all";
 const feedback={};
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
@@ -722,11 +724,16 @@ function mentionsBrand(text) {
   return KARO_BRANDS.find(b=>text.toLowerCase().includes(b.toLowerCase()))||null;
 }
 
-function timeAgo(iso){
+function formatTime(iso){
   if(!iso) return "";
-  const h=Math.floor((Date.now()-new Date(iso))/3600000);
-  if(h<1) return "<1t"; if(h<24) return `${h}t`;
-  const d=Math.floor(h/24); return d===1?"i går":`${d}d`;
+  const d=new Date(iso);
+  const h=Math.floor((Date.now()-d)/3600000);
+  if(h<1) return "<1t";
+  if(h<24) return `${h}t`;
+  if(h<48) return "i går";
+  const opts={day:"numeric",month:"short"};
+  if(d.getFullYear()!==new Date().getFullYear()) opts.year="numeric";
+  return d.toLocaleDateString("nb-NO",opts);
 }
 
 function feedbackHtml(id, isManual){
@@ -783,10 +790,12 @@ async function loadFeedback(){
 // ── Filters ───────────────────────────────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById("search-input")?.value||"").toLowerCase();
+  const dateCutoff=activeDateRange!=="all"?new Date(Date.now()-parseInt(activeDateRange)*86400000):null;
   const f=allArticles.filter(a=>{
     if(activeCategory!=="all"&&a.category!==activeCategory) return false;
     if(activeSource!=="Alle"&&a.source!==activeSource) return false;
     if(q&&![a.title,a.summary,a.source].some(v=>(v||"").toLowerCase().includes(q))) return false;
+    if(dateCutoff&&a.published_at&&new Date(a.published_at)<dateCutoff) return false;
     return true;
   });
   renderCatBar(allArticles);
@@ -833,7 +842,7 @@ function renderArticles(arts){
       <div class="af-meta">
         <span class="m-src">${f.source||""}</span>
         <span class="m-dot"></span>
-        <span class="m-time">${timeAgo(f.published_at)}</span>
+        <span class="m-time">${formatTime(f.published_at)}</span>
         ${brand?`<span class="af-brand-badge">★ ${brand}</span>`:''}
       </div>
       <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
@@ -855,7 +864,7 @@ function renderArticles(arts){
           <span class="m-dot"></span>
           <span class="m-src">${a.source||""}</span>
           <span class="m-dot"></span>
-          <span class="m-time">${timeAgo(a.published_at)}</span>
+          <span class="m-time">${formatTime(a.published_at)}</span>
           ${brand?`<span class="m-brand">★ ${brand}</span>`:''}
           <span class="m-score">▲${a.relevance_score||""}</span>
         </div>
@@ -934,6 +943,7 @@ function switchView(v,btn){
     mainEl.style.display=""; sourcesEl.classList.remove("visible");
     catStrip.style.display="";
     toolbar.classList.toggle("visible",v==="archive");
+    if(v!=="archive"){activeDateRange="all";document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));}
     title.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
     document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
     loadArticles();
@@ -942,11 +952,16 @@ function switchView(v,btn){
 
 function setCat(cat){activeCategory=cat;applyFilters();}
 function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
+function setDateRange(range,btn){activeDateRange=range;document.querySelectorAll(".date-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
   `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
 ).join("");
+document.getElementById("date-filters").innerHTML=
+  [{id:"all",label:"Alle datoer"},{id:"1",label:"I dag"},{id:"7",label:"7 dager"},{id:"30",label:"30 dager"},{id:"90",label:"90 dager"}]
+  .map(r=>`<button class="date-btn${r.id==="all"?" active":""}" onclick="setDateRange('${r.id}',this)">${r.label}</button>`)
+  .join("");
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"});
 loadArticles();
 loadFeedback();
