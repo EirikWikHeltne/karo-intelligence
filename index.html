@@ -1183,8 +1183,7 @@ function acceptCookies(){
   if(!sp) return;
   setTimeout(function(){
     sp.classList.add("exit");
-    var fallback = setTimeout(function(){ sp.remove(); }, 1000);
-    sp.addEventListener("animationend", function(){ clearTimeout(fallback); sp.remove(); }, {once:true});
+    setTimeout(function(){ sp.remove(); }, 900);
   }, 1800);
 })();
 
