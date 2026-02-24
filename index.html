@@ -67,9 +67,10 @@
     #search-input::placeholder { color: var(--ink-4); }
     #search-input:focus { border-bottom-color: var(--ink-1); }
     .src-filters { display: flex; gap: 4px; flex-wrap: wrap; }
-    .src-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 8px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; }
-    .src-btn.active { background: var(--ink-1); border-color: var(--ink-1); color: var(--bg); }
-    .src-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--ink-2); }
+    .src-btn, .date-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 8px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; }
+    .src-btn.active, .date-btn.active { background: var(--ink-1); border-color: var(--ink-1); color: var(--bg); }
+    .src-btn:hover:not(.active), .date-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--ink-2); }
+    .date-filters { display: flex; gap: 4px; flex-wrap: wrap; width: 100%; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--rule); }
 
     /* ── Main ── */
     #main { padding: 28px 0 80px; }
@@ -342,14 +343,91 @@
       .modal-btn-primary, .modal-btn-danger, .modal-btn-secondary {
         width: 100%; min-height: 48px; padding: 14px 24px; font-size: 12px;
       }
-      .modal-input, select.modal-input, textarea.modal-input { font-size: 16px; }
+      /* Prevent iOS zoom on every text input on the page */
+      .modal-input, select.modal-input, textarea.modal-input,
+      #search-input { font-size: 16px; }
       .modal-close { top: 8px; right: 12px; }
       .modal-header-title { font-size: 20px; }
-      .fb-btn { min-height: 40px; padding: 6px 12px; }
+
+      /* Bigger touch targets + more readable text for feedback row */
+      .fb-btn { min-height: 44px; padding: 8px 14px; font-size: 11px; }
+      .fb-label { font-size: 11px; }
+
+      /* Larger article meta labels on mobile */
+      .m-cat, .m-src, .m-time, .m-score { font-size: 11px; }
+
+      /* Slightly larger article titles on mobile */
+      .ar-title { font-size: 16px; }
+    }
+
+    /* ── Splash screen ── */
+    #splash {
+      position: fixed; inset: 0; z-index: 99999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #splash { display: none; }
+    }
+    .splash-inner {
+      display: flex; flex-direction: column; align-items: center;
+      user-select: none;
+    }
+    .splash-rule {
+      height: 1px; background: var(--ink-1); width: 0;
+    }
+    .splash-rule-top {
+      margin-bottom: 20px;
+      animation: splashRuleGrow 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both;
+    }
+    .splash-rule-bottom {
+      margin-top: 16px;
+      animation: splashRuleGrow 0.55s cubic-bezier(0.16,1,0.3,1) 0.28s both;
+    }
+    @keyframes splashRuleGrow {
+      from { width: 0; }
+      to   { width: min(160px, 40vw); }
+    }
+    #splash-logo {
+      font-family: var(--serif);
+      font-size: clamp(64px, 15vw, 104px);
+      font-weight: 400; font-style: italic;
+      color: var(--ink-1); letter-spacing: -0.02em; line-height: 1;
+      clip-path: inset(0 0 100% 0);
+      animation: splashReveal 0.65s cubic-bezier(0.16,1,0.3,1) 0.3s both;
+    }
+    @keyframes splashReveal {
+      to { clip-path: inset(0 0 -5% 0); }
+    }
+    #splash-tagline {
+      font-family: var(--mono);
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--ink-4);
+      opacity: 0;
+      animation: splashFadeIn 0.5s ease 0.82s both;
+    }
+    @keyframes splashFadeIn {
+      to { opacity: 1; }
+    }
+    #splash.exit {
+      animation: splashExit 0.75s cubic-bezier(0.76,0,0.24,1) 0.05s both;
+    }
+    @keyframes splashExit {
+      to { transform: translateY(-100%); }
     }
   </style>
 </head>
 <body>
+
+<div id="splash" aria-hidden="true">
+  <div class="splash-inner">
+    <div class="splash-rule splash-rule-top"></div>
+    <div id="splash-logo">Karo</div>
+    <div id="splash-tagline">Markedsintelligens</div>
+    <div class="splash-rule splash-rule-bottom"></div>
+  </div>
+</div>
+
 <div class="shell">
 
   <header id="masthead">
@@ -383,6 +461,7 @@
       <input id="search-input" type="text" placeholder="Søk…" oninput="applyFilters()" />
     </div>
     <div class="src-filters" id="source-filters"></div>
+    <div class="date-filters" id="date-filters"></div>
   </div>
 
   <main id="main">
@@ -631,7 +710,7 @@ const KEYWORDS = [
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle";
+let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all";
 const feedback={};
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
@@ -645,11 +724,16 @@ function mentionsBrand(text) {
   return KARO_BRANDS.find(b=>text.toLowerCase().includes(b.toLowerCase()))||null;
 }
 
-function timeAgo(iso){
+function formatTime(iso){
   if(!iso) return "";
-  const h=Math.floor((Date.now()-new Date(iso))/3600000);
-  if(h<1) return "<1t"; if(h<24) return `${h}t`;
-  const d=Math.floor(h/24); return d===1?"i går":`${d}d`;
+  const d=new Date(iso);
+  const h=Math.floor((Date.now()-d)/3600000);
+  if(h<1) return "<1t";
+  if(h<24) return `${h}t`;
+  if(h<48) return "i går";
+  const opts={day:"numeric",month:"short"};
+  if(d.getFullYear()!==new Date().getFullYear()) opts.year="numeric";
+  return d.toLocaleDateString("nb-NO",opts);
 }
 
 function feedbackHtml(id, isManual){
@@ -706,10 +790,12 @@ async function loadFeedback(){
 // ── Filters ───────────────────────────────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById("search-input")?.value||"").toLowerCase();
+  const dateCutoff=activeDateRange!=="all"?new Date(Date.now()-parseInt(activeDateRange)*86400000):null;
   const f=allArticles.filter(a=>{
     if(activeCategory!=="all"&&a.category!==activeCategory) return false;
     if(activeSource!=="Alle"&&a.source!==activeSource) return false;
     if(q&&![a.title,a.summary,a.source].some(v=>(v||"").toLowerCase().includes(q))) return false;
+    if(dateCutoff&&a.published_at&&new Date(a.published_at)<dateCutoff) return false;
     return true;
   });
   renderCatBar(allArticles);
@@ -748,7 +834,7 @@ function renderArticles(arts){
   if(activeView==="today"&&arts[0]){
     const f=arts[0];
     const img=f.image_url||categoryImg(f.category);
-    const brand=mentionsBrand((f.title||"")+(f.summary||""));
+    const brand=mentionsBrand((f.title||"")+(f.summary||"")+(f.ingress||""));
     html+=`<div class="article-featured">
       <div class="af-hero" style="background-image:url('${img}')">
         <span class="af-hero-cat">${f.category||""}</span>
@@ -756,7 +842,7 @@ function renderArticles(arts){
       <div class="af-meta">
         <span class="m-src">${f.source||""}</span>
         <span class="m-dot"></span>
-        <span class="m-time">${timeAgo(f.published_at)}</span>
+        <span class="m-time">${formatTime(f.published_at)}</span>
         ${brand?`<span class="af-brand-badge">★ ${brand}</span>`:''}
       </div>
       <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
@@ -768,7 +854,7 @@ function renderArticles(arts){
   html+=`<div class="articles-list">`;
   arts.slice(start).forEach((a,i)=>{
     const img=a.image_url||categoryImg(a.category);
-    const brand=mentionsBrand((a.title||"")+(a.summary||""));
+    const brand=mentionsBrand((a.title||"")+(a.summary||"")+(a.ingress||""));
     html+=`<div class="article-row fade-in" style="animation-delay:${i*18}ms">
       <span class="ar-idx">${String(i+start+1).padStart(2,"0")}</span>
       <div class="ar-img" style="background-image:url('${img}')"></div>
@@ -778,7 +864,7 @@ function renderArticles(arts){
           <span class="m-dot"></span>
           <span class="m-src">${a.source||""}</span>
           <span class="m-dot"></span>
-          <span class="m-time">${timeAgo(a.published_at)}</span>
+          <span class="m-time">${formatTime(a.published_at)}</span>
           ${brand?`<span class="m-brand">★ ${brand}</span>`:''}
           <span class="m-score">▲${a.relevance_score||""}</span>
         </div>
@@ -857,6 +943,7 @@ function switchView(v,btn){
     mainEl.style.display=""; sourcesEl.classList.remove("visible");
     catStrip.style.display="";
     toolbar.classList.toggle("visible",v==="archive");
+    if(v!=="archive"){activeDateRange="all";document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));}
     title.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
     document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
     loadArticles();
@@ -865,11 +952,16 @@ function switchView(v,btn){
 
 function setCat(cat){activeCategory=cat;applyFilters();}
 function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
+function setDateRange(range,btn){activeDateRange=range;document.querySelectorAll(".date-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
   `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
 ).join("");
+document.getElementById("date-filters").innerHTML=
+  [{id:"all",label:"Alle datoer"},{id:"1",label:"I dag"},{id:"7",label:"7 dager"},{id:"30",label:"30 dager"},{id:"90",label:"90 dager"}]
+  .map(r=>`<button class="date-btn${r.id==="all"?" active":""}" onclick="setDateRange('${r.id}',this)">${r.label}</button>`)
+  .join("");
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"});
 loadArticles();
 loadFeedback();
@@ -1085,6 +1177,17 @@ function acceptCookies(){
 }
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
+// ── Splash ────────────────────────────────────────────────────────────────────
+(function(){
+  var sp = document.getElementById("splash");
+  if(!sp) return;
+  setTimeout(function(){
+    sp.classList.add("exit");
+    var fallback = setTimeout(function(){ sp.remove(); }, 1000);
+    sp.addEventListener("animationend", function(){ clearTimeout(fallback); sp.remove(); }, {once:true});
+  }, 1800);
+})();
+
 const DEMO=[
   {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie – Decubal blant vinnerne",source:"E24",category:"apotek",published_at:"2026-02-19T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Decubal trekkes frem som en av de sterkeste performerne.",url:"#",relevance_score:92},
   {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-19T07:45:00Z",summary:"KKR vurderer strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg eller børsnotering i 2026–2027.",url:"#",relevance_score:97},
