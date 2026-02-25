@@ -9,9 +9,13 @@ CREATE TABLE IF NOT EXISTS articles (
   ingress          text,
   summary          text,
   category         text,
+  brand            text,
   relevance_score  int,
   created_at       timestamptz DEFAULT now()
 );
+
+-- Kjør dette hvis tabellen allerede finnes (migrering):
+-- ALTER TABLE articles ADD COLUMN IF NOT EXISTS brand text;
 
 -- Indekser for rask filtrering i arkivet
 CREATE INDEX IF NOT EXISTS idx_articles_category     ON articles (category);
