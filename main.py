@@ -33,15 +33,20 @@ RSS_FEEDS = {
     "TV2":            ["https://www.tv2.no/rss/nyheter/innenriks",
                        "https://www.tv2.no/rss/nyheter/utenriks"],
     "Dagens Medisin": ["https://www.dagensmedisin.no/rss"],
+    "Farmatid":       ["https://www.farmatid.no/feed/"],
+    "Dagligvarehandelen": ["https://www.dagligvarehandelen.no/feed/"],
     # Internasjonale kilder
     "Reuters":        ["https://feeds.reuters.com/reuters/businessNews",
                        "https://feeds.reuters.com/reuters/healthNews"],
     "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
                        "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
     "The Economist":  ["https://news.google.com/rss/search?q=site:economist.com+health+pharma+consumer&hl=en&gl=NO&ceid=NO:en"],
-    # Offentlige kilder
+    "Fierce Pharma":  ["https://www.fiercepharma.com/rss/xml"],
+    # Offentlige/bransje-kilder
     "FHI":            ["https://www.fhi.no/rss/nyheter/"],
     "SSB":            ["https://www.ssb.no/rss/"],
+    "DMP":            ["https://www.dmp.no/rss/nyheter/"],        # Direktoratet for medisinske produkter
+    "Helsedirektoratet": ["https://www.helsedirektoratet.no/rss"], # Helsedirektoratet nyheter
 }
 
 KEYWORDS = [
@@ -169,7 +174,8 @@ def fetch_recent_articles() -> list[dict]:
                         "title":        title,
                         "url":          link,
                         "ingress":      summary[:1000],
-                        "published_at": pub.isoformat() if pub else None,
+                        # Bruk nåtidspunkt som fallback hvis feeden mangler publiseringsdato
+                        "published_at": (pub or datetime.now(timezone.utc)).isoformat(),
                     })
             except Exception as e:
                 print(f"[WARN] Feil ved henting av {url}: {e}")

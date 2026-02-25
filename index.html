@@ -124,8 +124,7 @@
     .m-score { font-family: var(--mono); font-size: 9px; color: var(--ink-5); margin-left: auto; }
     .m-brand { display: inline-block; background: var(--ink-1); color: var(--bg); font-family: var(--mono); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 5px; border-radius: 2px; }
     .ar-title { font-family: var(--serif); font-size: clamp(15px,2.5vw,18px); font-weight: 500; line-height: 1.3; color: var(--ink-1); margin-bottom: 3px; }
-    .ar-summary { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.55; color: var(--ink-3); display: none; }
-    @media(min-width: 600px) { .ar-summary { display: block; } }
+    .ar-summary { font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.55; color: var(--ink-3); }
 
     /* ── Feedback ── */
     .ar-feedback { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
@@ -704,7 +703,7 @@ const CAT_MAP = Object.fromEntries(CATEGORIES.map(c=>[c.id,c]));
 
 const KARO_BRANDS = ["Decubal","Locobase","Apobase","Flux"];
 
-const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Reuters","NYT","The Economist","FHI","SSB"];
+const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Farmatid","Dagligvarehandelen","Reuters","NYT","The Economist","Fierce Pharma","FHI","SSB","DMP","Helsedirektoratet"];
 
 const RSS_FEEDS = {
   "VG":             ["https://www.vg.no/rss/feed/forsiden/","https://www.vg.no/rss/feed/?categories=1069"],
@@ -718,11 +717,16 @@ const RSS_FEEDS = {
   "Nettavisen":     ["https://www.nettavisen.no/service/rich-rss?tag=nyheter"],
   "TV2":            ["https://www.tv2.no/rss/nyheter/innenriks","https://www.tv2.no/rss/nyheter/utenriks"],
   "Dagens Medisin": ["https://www.dagensmedisin.no/rss"],
+  "Farmatid":       ["https://www.farmatid.no/feed/"],
+  "Dagligvarehandelen": ["https://www.dagligvarehandelen.no/feed/"],
   "Reuters":        ["https://feeds.reuters.com/reuters/businessNews","https://feeds.reuters.com/reuters/healthNews"],
   "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml","https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
   "The Economist":  ["https://news.google.com/rss/search?q=site:economist.com+health+pharma+consumer&hl=en&gl=NO&ceid=NO:en"],
+  "Fierce Pharma":  ["https://www.fiercepharma.com/rss/xml"],
   "FHI":            ["https://www.fhi.no/rss/nyheter/"],
   "SSB":            ["https://www.ssb.no/rss/"],
+  "DMP":            ["https://www.dmp.no/rss/nyheter/"],
+  "Helsedirektoratet": ["https://www.helsedirektoratet.no/rss"],
 };
 
 const KEYWORDS = [
@@ -895,7 +899,7 @@ function renderArticles(arts){
       <div class="af-meta">
         <span class="m-src">${f.source||""}</span>
         <span class="m-dot"></span>
-        <span class="m-time">${formatTime(f.published_at)}</span>
+        <span class="m-time">${formatTime(f.published_at||f.created_at)}</span>
         ${brand?`<span class="af-brand-badge">★ ${brand}</span>`:''}
       </div>
       <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
@@ -908,7 +912,8 @@ function renderArticles(arts){
   arts.slice(start).forEach((a,i)=>{
     const img=a.image_url||categoryImg(a.category);
     const brand=a.brand||mentionsBrand((a.title||"")+(a.summary||"")+(a.ingress||""));
-    const timeStr=activeView==="archive"?formatDateFull(a.published_at):formatTime(a.published_at);
+    const dateIso=a.published_at||a.created_at;
+    const timeStr=activeView==="archive"?formatDateFull(dateIso):formatTime(dateIso);
     html+=`<div class="article-row fade-in" style="animation-delay:${i*18}ms">
       <span class="ar-idx">${String(i+start+1).padStart(2,"0")}</span>
       <div class="ar-img" style="background-image:url('${img}')"></div>
