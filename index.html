@@ -58,6 +58,15 @@
     .cat-n { font-size: 9px; opacity: 0.5; }
     .cat-btn.active .cat-n { opacity: 0.65; }
 
+    /* ── Brand filter bar ── */
+    #brand-strip { border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
+    #brand-strip::-webkit-scrollbar { display: none; }
+    .brand-inner { display: flex; padding: 6px 0; white-space: nowrap; gap: 2px; align-items: center; }
+    .brand-filter-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-right: 4px; flex-shrink: 0; }
+    .brand-btn { background: none; border: 1px solid transparent; border-radius: 2px; padding: 3px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; transition: all .12s; flex-shrink: 0; }
+    .brand-btn.active { background: var(--ink-1); color: var(--bg); border-color: var(--ink-1); }
+    .brand-btn:hover:not(.active) { color: var(--ink-1); border-color: var(--rule-dk); }
+
     /* ── Toolbar (archive search) ── */
     #toolbar { display: none; padding: 16px 0; border-bottom: 1px solid var(--rule); gap: 12px; align-items: center; flex-wrap: wrap; }
     #toolbar.visible { display: flex; }
@@ -297,6 +306,9 @@
       margin-bottom: 16px; min-height: 16px;
     }
     .modal-actions { display: flex; gap: 12px; }
+    .brand-checks { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 8px 0; }
+    .brand-check-label { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-2); cursor: pointer; user-select: none; }
+    .brand-check-label input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--ink-1); cursor: pointer; }
     .modal-btn-primary {
       flex: 1; background: var(--ink-1); color: var(--bg);
       border: none; border-radius: 2px; padding: 12px 24px;
@@ -460,6 +472,10 @@
     <div class="cat-inner" id="cat-buttons"></div>
   </div>
 
+  <div id="brand-strip" style="display:none">
+    <div class="brand-inner" id="brand-buttons"></div>
+  </div>
+
   <div id="toolbar">
     <div class="search-wrap">
       <span class="search-icon">⌕</span>
@@ -553,14 +569,15 @@
     </div>
 
     <div class="modal-field">
-      <label class="modal-field-label">Karo-merkevare <span style="opacity:0.5">(valgfritt)</span></label>
-      <select id="edit-brand" class="modal-input">
-        <option value="">— Ingen —</option>
-        <option value="Decubal">Decubal</option>
-        <option value="Locobase">Locobase</option>
-        <option value="Apobase">Apobase</option>
-        <option value="Flux">Flux</option>
-      </select>
+      <label class="modal-field-label">Karo-merkevarer <span style="opacity:0.5">(valgfritt, flere kan velges)</span></label>
+      <div class="brand-checks" id="edit-brand-checks">
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Decubal"> Decubal</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Locobase"> Locobase</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Apobase"> Apobase</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Flux"> Flux</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Ibux"> Ibux</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Paracet"> Paracet</label>
+      </div>
     </div>
 
     <div class="modal-grid-2">
@@ -641,14 +658,15 @@
     </div>
 
     <div class="modal-field">
-      <label class="modal-field-label">Karo-merkevare <span style="opacity:0.5">(valgfritt)</span></label>
-      <select id="add-brand" class="modal-input">
-        <option value="">— Ingen —</option>
-        <option value="Decubal">Decubal</option>
-        <option value="Locobase">Locobase</option>
-        <option value="Apobase">Apobase</option>
-        <option value="Flux">Flux</option>
-      </select>
+      <label class="modal-field-label">Karo-merkevarer <span style="opacity:0.5">(valgfritt, flere kan velges)</span></label>
+      <div class="brand-checks" id="add-brand-checks">
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Decubal"> Decubal</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Locobase"> Locobase</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Apobase"> Apobase</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Flux"> Flux</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Ibux"> Ibux</label>
+        <label class="brand-check-label"><input type="checkbox" class="brand-cb" value="Paracet"> Paracet</label>
+      </div>
     </div>
 
     <div class="modal-field-last">
@@ -701,7 +719,7 @@ const CATEGORIES = [
 ];
 const CAT_MAP = Object.fromEntries(CATEGORIES.map(c=>[c.id,c]));
 
-const KARO_BRANDS = ["Decubal","Locobase","Apobase","Flux"];
+const KARO_BRANDS = ["Decubal","Locobase","Apobase","Flux","Ibux","Paracet"];
 
 const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Farmatid","Dagligvarehandelen","Reuters","NYT","The Economist","Fierce Pharma","FHI","SSB","DMP","Helsedirektoratet"];
 
@@ -753,7 +771,7 @@ const KEYWORDS = [
 ];
 
 // ── State ──────────────────���──────────────────────────────────────────────────
-let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all";
+let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all", activeBrand="all";
 const feedback={};
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
@@ -762,9 +780,23 @@ function categoryImg(cat) {
   return (CAT_MAP[cat]||CAT_MAP["annet"]).img;
 }
 
-function mentionsBrand(text) {
-  if(!text) return null;
-  return KARO_BRANDS.find(b=>text.toLowerCase().includes(b.toLowerCase()))||null;
+// Returner array med alle Karo-merkevarer nevnt i teksten
+function mentionsBrands(text) {
+  if(!text) return [];
+  const lower = text.toLowerCase();
+  return KARO_BRANDS.filter(b=>lower.includes(b.toLowerCase()));
+}
+
+// Kombiner merkevarer fra DB-felt og tekstdeteksjon, returner unike
+function getBrands(article) {
+  const dbBrands = article.brand
+    ? article.brand.split(",").map(b=>b.trim()).filter(Boolean)
+    : [];
+  const textBrands = mentionsBrands(
+    (article.title||"")+" "+(article.summary||"")+" "+(article.ingress||"")
+  );
+  const all = [...new Set([...dbBrands, ...textBrands])];
+  return all;
 }
 
 function formatTime(iso){
@@ -851,13 +883,41 @@ function applyFilters(){
   const f=allArticles.filter(a=>{
     if(activeCategory!=="all"&&a.category!==activeCategory) return false;
     if(activeSource!=="Alle"&&a.source!==activeSource) return false;
+    if(activeBrand!=="all"){
+      const brands=getBrands(a);
+      if(!brands.includes(activeBrand)) return false;
+    }
     if(q&&![a.title,a.summary,a.source].some(v=>(v||"").toLowerCase().includes(q))) return false;
     if(dateCutoff&&a.published_at&&new Date(a.published_at)<dateCutoff) return false;
     return true;
   });
   renderCatBar(allArticles);
+  renderBrandBar(allArticles);
   renderArticles(f);
   document.getElementById("section-count").textContent=`${f.length} saker`;
+}
+
+// ── Render brand filter bar ───────────────────────────────────────────────────
+function renderBrandBar(arts){
+  // Tell antall artikler per merkevare
+  const counts={};
+  arts.forEach(a=>{
+    getBrands(a).forEach(b=>{ counts[b]=(counts[b]||0)+1; });
+  });
+  const hasBrands=Object.keys(counts).length>0;
+  const strip=document.getElementById("brand-strip");
+  strip.style.display=hasBrands?"":"none";
+  if(!hasBrands) return;
+
+  const allActive=activeBrand==="all";
+  let html=`<span class="brand-filter-label">Merkevare</span>`;
+  html+=`<button class="brand-btn${allActive?" active":""}" onclick="setBrand('all')">Alle</button>`;
+  KARO_BRANDS.forEach(b=>{
+    if(!counts[b]) return;
+    const a=activeBrand===b;
+    html+=`<button class="brand-btn${a?" active":""}" onclick="setBrand('${b}')">${b} <span style="opacity:0.5;font-size:9px">${counts[b]}</span></button>`;
+  });
+  document.getElementById("brand-buttons").innerHTML=html;
 }
 
 // ── Render category bar ───────────────────────────────────────────────────────
@@ -891,7 +951,7 @@ function renderArticles(arts){
   if(activeView==="today"&&arts[0]){
     const f=arts[0];
     const img=f.image_url||categoryImg(f.category);
-    const brand=f.brand||mentionsBrand((f.title||"")+(f.summary||"")+(f.ingress||""));
+    const brands=getBrands(f);
     html+=`<div class="article-featured">
       <div class="af-hero" style="background-image:url('${img}')">
         <span class="af-hero-cat">${f.category||""}</span>
@@ -900,7 +960,7 @@ function renderArticles(arts){
         <span class="m-src">${f.source||""}</span>
         <span class="m-dot"></span>
         <span class="m-time">${formatTime(f.published_at||f.created_at)}</span>
-        ${brand?`<span class="af-brand-badge">★ ${brand}</span>`:''}
+        ${brands.map(b=>`<span class="af-brand-badge">★ ${b}</span>`).join("")}
       </div>
       <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
       <div class="af-summary">${f.summary||""}</div>
@@ -911,7 +971,7 @@ function renderArticles(arts){
   html+=`<div class="articles-list">`;
   arts.slice(start).forEach((a,i)=>{
     const img=a.image_url||categoryImg(a.category);
-    const brand=a.brand||mentionsBrand((a.title||"")+(a.summary||"")+(a.ingress||""));
+    const brands=getBrands(a);
     const dateIso=a.published_at||a.created_at;
     const timeStr=activeView==="archive"?formatDateFull(dateIso):formatTime(dateIso);
     html+=`<div class="article-row fade-in" style="animation-delay:${i*18}ms">
@@ -924,7 +984,7 @@ function renderArticles(arts){
           <span class="m-src">${a.source||""}</span>
           <span class="m-dot"></span>
           <span class="m-time">${timeStr}</span>
-          ${brand?`<span class="m-brand">★ ${brand}</span>`:''}
+          ${brands.map(b=>`<span class="m-brand">★ ${b}</span>`).join("")}
           <span class="m-score">▲${a.relevance_score||""}</span>
         </div>
         <a href="${a.url||'#'}" target="_blank" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
@@ -990,17 +1050,19 @@ function switchView(v,btn){
   const mainEl=document.getElementById("main");
   const sourcesEl=document.getElementById("sources-page");
   const catStrip=document.getElementById("cat-strip");
+  const brandStrip=document.getElementById("brand-strip");
   const toolbar=document.getElementById("toolbar");
   const title=document.getElementById("page-title");
 
   if(v==="sources"){
     mainEl.style.display="none"; sourcesEl.classList.add("visible");
-    catStrip.style.display="none"; toolbar.classList.remove("visible");
+    catStrip.style.display="none"; brandStrip.style.display="none"; toolbar.classList.remove("visible");
     title.innerHTML="Kilder <em>&amp; kalibrering</em>";
     renderSourcesPage();
   } else {
     mainEl.style.display=""; sourcesEl.classList.remove("visible");
     catStrip.style.display="";
+    // brand-strip vises av renderBrandBar() basert på data
     toolbar.classList.toggle("visible",v==="archive");
     if(v!=="archive"){activeDateRange="all";document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));}
     title.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
@@ -1010,6 +1072,7 @@ function switchView(v,btn){
 }
 
 function setCat(cat){activeCategory=cat;applyFilters();}
+function setBrand(brand){activeBrand=brand;applyFilters();}
 function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 function setDateRange(range,btn){activeDateRange=range;document.querySelectorAll(".date-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 
@@ -1043,9 +1106,11 @@ function openEditModal(id){
   const sel = document.getElementById("edit-category");
   sel.value = a.category || "annet";
 
-  // Set brand dropdown
-  const brandSel = document.getElementById("edit-brand");
-  brandSel.value = a.brand || "";
+  // Set brand checkboxes
+  const editBrands = (a.brand || "").split(",").map(b=>b.trim()).filter(Boolean);
+  document.querySelectorAll("#edit-brand-checks .brand-cb").forEach(cb=>{
+    cb.checked = editBrands.includes(cb.value);
+  });
 
   document.getElementById("edit-modal").style.display = "flex";
   document.body.style.overflow = "hidden";
@@ -1061,7 +1126,8 @@ async function saveEdit(){
   const title        = document.getElementById("edit-title").value.trim();
   const source       = document.getElementById("edit-source").value.trim();
   const category     = document.getElementById("edit-category").value;
-  const brand        = document.getElementById("edit-brand").value || null;
+  const checkedBrands = [...document.querySelectorAll("#edit-brand-checks .brand-cb:checked")].map(cb=>cb.value);
+  const brand        = checkedBrands.length ? checkedBrands.join(",") : null;
   const summary      = document.getElementById("edit-summary").value.trim();
   const score        = parseInt(document.getElementById("edit-score").value) || 0;
   const pubRaw       = document.getElementById("edit-published").value;
@@ -1142,7 +1208,7 @@ function closeAddModal(){
     document.getElementById(id).value="";
   });
   document.getElementById("add-category").value="annet";
-  document.getElementById("add-brand").value="";
+  document.querySelectorAll("#add-brand-checks .brand-cb").forEach(cb=>{ cb.checked=false; });
 }
 
 function resetAddForm(){
@@ -1181,7 +1247,8 @@ async function submitArticle(){
   const title    = document.getElementById("add-title").value.trim();
   const source   = document.getElementById("add-source").value.trim();
   const category = document.getElementById("add-category").value;
-  const brand    = document.getElementById("add-brand").value || null;
+  const addCheckedBrands = [...document.querySelectorAll("#add-brand-checks .brand-cb:checked")].map(cb=>cb.value);
+  const brand    = addCheckedBrands.length ? addCheckedBrands.join(",") : null;
   const note     = document.getElementById("add-note").value.trim();
   const pubRaw   = document.getElementById("add-published").value;
   const statusEl = document.getElementById("add-status");

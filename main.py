@@ -193,13 +193,23 @@ def fetch_recent_articles() -> list[dict]:
 # ── Claude-klassifisering ─────────────────────────────────────────────────────
 
 CLASSIFY_SYSTEM = """Du er markedsintelligensanalytiker for Karo Healthcare Norge.
-Karo eier Decubal, Locobase, Apobase (hudpleie/fuktighetskrem) og Flux (tannpleie/oral care).
-Karo selger via apotek og dagligvare i Norge. Eid av PE-fondet KKR.
+
+Karo eier og selger følgende merkevarer i Norge (eid av PE-fondet KKR):
+
+HUDPLEIE / DERMATOLOGI – kun via apotek:
+  • Decubal – fuktighetskrem, selges KUN via apotek (ikke dagligvare)
+  • Locobase – fuktighetskrem, selges KUN via apotek (ikke dagligvare)
+
+OTC-LEGEMIDLER / DAGLIGVARE – via apotek OG dagligvarekjeder (Rema 1000, NorgesGruppen, Coop m.fl.):
+  • Apobase – apotekprodukt
+  • Flux – tannpleie / oral care
+  • Ibux – ibuprofen (smertestillende)
+  • Paracet – paracetamol (smertestillende)
 
 Vurder om nyheten er relevant for Karo – DIREKTE eller INDIREKTE.
 
-Direkte relevante: hudpleie, eksem, tannpleie, apotek, OTC-legemidler, konkurrenter som Beiersdorf/Colgate, M&A i helsesektoren.
-Også direkte relevante: legemiddelforbruk, pillebruk, smertestillende, selvmedisinering – dette påvirker OTC-markedet Karo opererer i.
+Direkte relevante: hudpleie, eksem, tannpleie, apotek, OTC-legemidler, smertestillende, konkurrenter som Beiersdorf/Colgate, M&A i helsesektoren.
+Også direkte relevante: legemiddelforbruk, pillebruk, selvmedisinering – dette påvirker OTC-markedet Karo opererer i.
 
 Indirekte relevante (inkluder disse også):
 - Helsepolitikk og regulering som påvirker OTC-markedet
@@ -208,7 +218,9 @@ Indirekte relevante (inkluder disse også):
 - Markedsføring: nye regler, influencer-regler, digital reklame
 - Norsk økonomi som påvirker forbrukermarkedet
 - PE/M&A bredt i konsumentbransjen
-- Folkehelse og forbrukernes helsevaner – økt eller redusert medisinbruk påvirker Karos marked
+- Folkehelse og forbrukernes helsevaner
+
+Identifiser ALLE Karo-merkevarer som er eksplisitt nevnt i artikkelen (Decubal, Locobase, Apobase, Flux, Ibux, Paracet).
 
 Vær INKLUDERENDE – ved tvil, sett relevant=true med lav confidence.
 
@@ -217,9 +229,11 @@ Returner KUN gyldig JSON:
   "relevant": true,
   "category": "apotek",
   "confidence": 85,
+  "brands": ["Ibux", "Paracet"],
   "summary": "1-2 setninger som forklarer hvorfor dette er relevant for Karo."
 }
 
+"brands" er en liste med Karo-merkevarer som er nevnt i artikkelen. Tom liste [] hvis ingen er eksplisitt nevnt.
 Kategorier: M&A | apotek | dagligvare | dermatologi | oral-care | konkurrenter | regulatorisk | forbrukertrender | helsepolitikk | markedsføring | økonomi | annet
 confidence = 0-100."""
 
@@ -252,6 +266,9 @@ def classify_articles(articles: list[dict]) -> list[dict]:
                 art["category"]        = result.get("category", "annet")
                 art["relevance_score"] = result.get("confidence", 0)
                 art["summary"]         = result.get("summary", "")
+                # Lagre merkevarer som kommaseparert streng
+                brands = result.get("brands", [])
+                art["brand"] = ",".join(brands) if brands else None
                 relevant.append(art)
         except Exception as e:
             print(f"[WARN] Klassifisering feilet for '{art['title']}': {e}")
@@ -278,6 +295,7 @@ def save_to_supabase(articles: list[dict]) -> list[dict]:
                     "summary":         art.get("summary", ""),
                     "category":        art.get("category", "annet"),
                     "relevance_score": art.get("relevance_score", 0),
+                    "brand":           art.get("brand"),
                 },
                 on_conflict="url",
                 ignore_duplicates=True,
