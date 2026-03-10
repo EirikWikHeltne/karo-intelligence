@@ -787,16 +787,16 @@ function mentionsBrands(text) {
   return KARO_BRANDS.filter(b=>lower.includes(b.toLowerCase()));
 }
 
-// Kombiner merkevarer fra DB-felt og tekstdeteksjon, returner unike
+// Returner merkevarer for en artikkel.
+// Hvis brand-feltet er null (aldri redigert manuelt), bruk tekstdeteksjon som fallback.
+// Hvis brand-feltet er satt (selv til tom streng), respekter brukerens valg eksakt.
 function getBrands(article) {
-  const dbBrands = article.brand
-    ? article.brand.split(",").map(b=>b.trim()).filter(Boolean)
-    : [];
-  const textBrands = mentionsBrands(
-    (article.title||"")+" "+(article.summary||"")+" "+(article.ingress||"")
-  );
-  const all = [...new Set([...dbBrands, ...textBrands])];
-  return all;
+  if (article.brand === null || article.brand === undefined) {
+    return mentionsBrands(
+      (article.title||"")+" "+(article.summary||"")+" "+(article.ingress||"")
+    );
+  }
+  return article.brand.split(",").map(b=>b.trim()).filter(Boolean);
 }
 
 function formatTime(iso){
@@ -1106,8 +1106,8 @@ function openEditModal(id){
   const sel = document.getElementById("edit-category");
   sel.value = a.category || "annet";
 
-  // Set brand checkboxes
-  const editBrands = (a.brand || "").split(",").map(b=>b.trim()).filter(Boolean);
+  // Set brand checkboxes – bruk getBrands() for å vise hva som faktisk er merket
+  const editBrands = getBrands(a);
   document.querySelectorAll("#edit-brand-checks .brand-cb").forEach(cb=>{
     cb.checked = editBrands.includes(cb.value);
   });
@@ -1127,7 +1127,8 @@ async function saveEdit(){
   const source       = document.getElementById("edit-source").value.trim();
   const category     = document.getElementById("edit-category").value;
   const checkedBrands = [...document.querySelectorAll("#edit-brand-checks .brand-cb:checked")].map(cb=>cb.value);
-  const brand        = checkedBrands.length ? checkedBrands.join(",") : null;
+  // Tom streng ("") betyr "eksplisitt ingen merkevarer" – skiller seg fra null (aldri redigert)
+  const brand        = checkedBrands.join(",");
   const summary      = document.getElementById("edit-summary").value.trim();
   const score        = parseInt(document.getElementById("edit-score").value) || 0;
   const pubRaw       = document.getElementById("edit-published").value;
