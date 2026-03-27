@@ -891,10 +891,24 @@ function applyFilters(){
     if(dateCutoff&&a.published_at&&new Date(a.published_at)<dateCutoff) return false;
     return true;
   });
+  // Sortering:
+  // - Arkiv: relevans først (høyest → lavest), deretter nyeste publiseringsdato
+  // - Dagens brief: nyeste publiseringsdato
+  // For større arkivlister: regn ut sorteringsnøkler én gang per artikkel
+  const decorated=f.map(a=>({
+    a,
+    dateTs:new Date(a.published_at||a.created_at||0).getTime(),
+    score:Number(a.relevance_score)||0
+  }));
+  decorated.sort((x,y)=>{
+    if(activeView==="archive"&&y.score!==x.score) return y.score-x.score;
+    return y.dateTs-x.dateTs;
+  });
+  const sorted=decorated.map(v=>v.a);
   renderCatBar(allArticles);
   renderBrandBar(allArticles);
-  renderArticles(f);
-  document.getElementById("section-count").textContent=`${f.length} saker`;
+  renderArticles(sorted);
+  document.getElementById("section-count").textContent=`${sorted.length} saker`;
 }
 
 // ── Render brand filter bar ───────────────────────────────────────────────────

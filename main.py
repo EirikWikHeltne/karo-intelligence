@@ -127,6 +127,7 @@ KEYWORDS = [
     "retail health", "health retail", "drug store",
     "KKR", "Nordic Capital", "EQT",
 ]
+KEYWORDS_LOWER = tuple(kw.lower() for kw in KEYWORDS)
 
 CLAUDE_MODEL  = "claude-haiku-4-5-20251001"
 LOOKBACK_HOURS = 26
@@ -147,7 +148,7 @@ def parse_published(entry):
 
 def keyword_match(text: str) -> bool:
     lower = text.lower()
-    return any(kw.lower() in lower for kw in KEYWORDS)
+    return any(kw in lower for kw in KEYWORDS_LOWER)
 
 
 def fetch_recent_articles() -> list[dict]:
@@ -281,32 +282,36 @@ def classify_articles(articles: list[dict]) -> list[dict]:
 
 def save_to_supabase(articles: list[dict]) -> list[dict]:
     sb  = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
-    new = []
+    if not articles:
+        return []
 
-    for art in articles:
-        try:
-            result = sb.table("articles").upsert(
-                {
-                    "title":           art["title"],
-                    "url":             art["url"],
-                    "source":          art["source"],
-                    "published_at":    art.get("published_at"),
-                    "ingress":         art.get("ingress", ""),
-                    "summary":         art.get("summary", ""),
-                    "category":        art.get("category", "annet"),
-                    "relevance_score": art.get("relevance_score", 0),
-                    "brand":           art.get("brand"),
-                },
-                on_conflict="url",
-                ignore_duplicates=True,
-            ).execute()
-            if result.data:
-                new.append(art)
-        except Exception as e:
-            print(f"[WARN] DB-feil for '{art['title']}': {e}")
+    payload = [
+        {
+            "title":           art["title"],
+            "url":             art["url"],
+            "source":          art["source"],
+            "published_at":    art.get("published_at"),
+            "ingress":         art.get("ingress", ""),
+            "summary":         art.get("summary", ""),
+            "category":        art.get("category", "annet"),
+            "relevance_score": art.get("relevance_score", 0),
+            "brand":           art.get("brand"),
+        }
+        for art in articles
+    ]
 
-    print(f"[INFO] {len(new)} nye artikler lagret i Supabase")
-    return new
+    try:
+        result = sb.table("articles").upsert(
+            payload,
+            on_conflict="url",
+            ignore_duplicates=True,
+        ).execute()
+        saved = result.data or []
+        print(f"[INFO] Upsert ferdig. Returnerte {len(saved)} nye rader (forsøkte {len(payload)}).")
+        return saved
+    except Exception as e:
+        print(f"[WARN] DB-feil under bulk upsert: {e}")
+        return []
 
 
 # ── Hovedflyt ─────────────────────────────────────────────────────────────────
