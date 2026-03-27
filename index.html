@@ -891,6 +891,19 @@ function applyFilters(){
     if(dateCutoff&&a.published_at&&new Date(a.published_at)<dateCutoff) return false;
     return true;
   });
+  // Sortering:
+  // - Arkiv: relevans først (høyest → lavest), deretter nyeste publiseringsdato
+  // - Dagens brief: nyeste publiseringsdato
+  f.sort((a,b)=>{
+    const aDate=new Date(a.published_at||a.created_at||0).getTime();
+    const bDate=new Date(b.published_at||b.created_at||0).getTime();
+    if(activeView==="archive"){
+      const aScore=Number(a.relevance_score)||0;
+      const bScore=Number(b.relevance_score)||0;
+      if(bScore!==aScore) return bScore-aScore;
+    }
+    return bDate-aDate;
+  });
   renderCatBar(allArticles);
   renderBrandBar(allArticles);
   renderArticles(f);
