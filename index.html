@@ -894,17 +894,16 @@ function applyFilters(){
   // Sortering:
   // - Arkiv: relevans først (høyest → lavest), deretter nyeste publiseringsdato
   // - Dagens brief: nyeste publiseringsdato
-  // For større arkivlister: regn ut sorteringsnøkler én gang per artikkel
-  const decorated=f.map(a=>({
-    a,
-    dateTs:new Date(a.published_at||a.created_at||0).getTime(),
-    score:Number(a.relevance_score)||0
-  }));
-  decorated.sort((x,y)=>{
-    if(activeView==="archive"&&y.score!==x.score) return y.score-x.score;
-    return y.dateTs-x.dateTs;
+  f.sort((a,b)=>{
+    const aDate=new Date(a.published_at||a.created_at||0).getTime();
+    const bDate=new Date(b.published_at||b.created_at||0).getTime();
+    if(activeView==="archive"){
+      const aScore=Number(a.relevance_score)||0;
+      const bScore=Number(b.relevance_score)||0;
+      if(bScore!==aScore) return bScore-aScore;
+    }
+    return bDate-aDate;
   });
-  const sorted=decorated.map(v=>v.a);
   renderCatBar(allArticles);
   renderBrandBar(allArticles);
   renderArticles(sorted);
