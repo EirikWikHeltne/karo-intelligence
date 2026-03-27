@@ -906,8 +906,8 @@ function applyFilters(){
   });
   renderCatBar(allArticles);
   renderBrandBar(allArticles);
-  renderArticles(f);
-  document.getElementById("section-count").textContent=`${f.length} saker`;
+  renderArticles(sorted);
+  document.getElementById("section-count").textContent=`${sorted.length} saker`;
 }
 
 // ── Render brand filter bar ───────────────────────────────────────────────────
