@@ -7,10 +7,18 @@ og lagrer relevante artikler i Supabase.
 import os
 import json
 import feedparser
-import anthropic
-from supabase import create_client, Client
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
+
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
+
+try:
+    from supabase import create_client
+except ImportError:
+    create_client = None
 
 
 # ── Konfigurasjon ─────────────────────────────────────────────────────────────
@@ -132,6 +140,91 @@ KEYWORDS_LOWER = tuple(kw.lower() for kw in KEYWORDS)
 CLAUDE_MODEL  = "claude-haiku-4-5-20251001"
 LOOKBACK_HOURS = 26
 
+# ── Kategori-nøkkelord for lokal klassifisering (uten API) ──────────────────
+CATEGORY_KEYWORDS = {
+    "dermatologi": [
+        "hudpleie", "eksem", "psoriasis", "atopisk", "barrierekrem",
+        "dermatologi", "hudsykdom", "fuktighetskrem", "sårpleie",
+        "tørr hud", "sensitiv hud", "kløe", "allergisk",
+        "skincare", "skin care", "eczema", "atopic", "moisturizer", "dermatology",
+        "decubal", "locobase",
+    ],
+    "oral-care": [
+        "tannpleie", "munnhygiene", "tannkrem", "munnvann",
+        "tannhelse", "karies", "fluor", "tannlege",
+        "oral care", "toothpaste", "mouthwash", "dental",
+        "flux",
+    ],
+    "apotek": [
+        "apotek", "apotek 1", "vitusapotek", "boots",
+        "apotekforeningen", "apotekbransjen",
+        "pharmacy", "pharmacies", "drugstore",
+        "otc", "reseptfri", "reseptfritt", "over-the-counter",
+        "legemiddel", "farmasi", "apobase",
+        "smertestillende", "ibuprofen", "paracetamol",
+        "ibux", "paracet", "asan", "paralgin",
+        "painkiller", "pain relief", "acetaminophen",
+        "pillebruk", "pilleforbruk", "medisinbruk",
+        "legemiddelforbruk", "selvmedisinering", "egenbehandling",
+    ],
+    "dagligvare": [
+        "rema 1000", "norgesgruppen", "coop", "kiwi", "meny", "spar",
+        "dagligvare", "hylleplass", "sortiment", "dagligvarebransjen",
+        "supermarked", "matpris", "dagligvarekjede",
+        "retail health", "health retail", "drug store",
+    ],
+    "konkurrenter": [
+        "beiersdorf", "eucerin", "nivea", "unilever", "vaseline",
+        "la roche-posay", "colgate", "oral-b", "sensodyne",
+        "cerave", "dove", "johnson & johnson", "procter & gamble",
+        "l'oréal", "loreal", "l oreal", "johnson johnson",
+    ],
+    "M&A": [
+        "oppkjøp", "fusjon", "oppkjøpet", "kjøper opp",
+        "private equity", "kkr", "nordic capital", "eqt",
+        "axel johnson", "orkla", "schibsted",
+        "consumer health", "konsumenthelse",
+        "investeringsfond", "pe-fond",
+        "acquisition", "merger", "buyout",
+    ],
+    "regulatorisk": [
+        "legemiddelverket", "folkehelseinstituttet", "fhi",
+        "reseptfrihet", "markedsføringsloven",
+        "helse- og omsorgsdepartementet",
+        "eu-regulering", "efsa", "emballasje",
+        "plastforbudet",
+    ],
+    "helsepolitikk": [
+        "helsepolitikk", "helsestrategi", "folkehelse", "forebygging",
+        "helsesektor", "bioteknologi", "helsekost",
+        "kronisk sykdom", "eldrebølge",
+        "healthcare", "pharma", "pharmaceutical",
+    ],
+    "forbrukertrender": [
+        "forbrukertrender", "forbrukervaner", "kjøpekraft",
+        "bærekraftig forbruk", "grønn forbruker",
+        "skincare market", "beauty market", "health market",
+    ],
+    "økonomi": [
+        "prisvekst", "inflasjon", "kronekurs", "renteøkning",
+        "handelsbalanse", "import", "eksport",
+    ],
+    "markedsføring": [
+        "influencer", "sosiale medier", "digital markedsføring",
+        "reklameforbudet", "merkevare", "brand",
+        "tv-reklame", "reklamebransjen",
+    ],
+}
+
+BRAND_KEYWORDS = {
+    "Decubal":  ["decubal"],
+    "Locobase": ["locobase"],
+    "Apobase":  ["apobase"],
+    "Flux":     ["flux tannpleie", "flux tann", "flux munn"],  # "flux" alone is too generic
+    "Ibux":     ["ibux"],
+    "Paracet":  ["paracet"],
+}
+
 
 # ── RSS-henting ───────────────────────────────────────────────────────────────
 
@@ -239,7 +332,42 @@ Kategorier: M&A | apotek | dagligvare | dermatologi | oral-care | konkurrenter |
 confidence = 0-100."""
 
 
+def classify_articles_local(articles: list[dict]) -> list[dict]:
+    """Lokal nøkkelord-basert klassifisering – ingen API nødvendig."""
+    relevant = []
+
+    for art in articles:
+        text = (art["title"] + " " + art.get("ingress", "")).lower()
+
+        # Finn beste kategori basert på antall nøkkelord-treff
+        best_cat, best_score = "annet", 0
+        for cat, kws in CATEGORY_KEYWORDS.items():
+            hits = sum(1 for kw in kws if kw in text)
+            if hits > best_score:
+                best_cat, best_score = cat, hits
+
+        # Beregn relevans-score: flere treff = høyere score (maks 90)
+        confidence = min(90, 50 + best_score * 10)
+
+        # Finn nevnte Karo-merkevarer
+        brands = [b for b, kws in BRAND_KEYWORDS.items() if any(kw in text for kw in kws)]
+
+        # Boost score for direkte merkevareretreff
+        if brands:
+            confidence = min(95, confidence + 15)
+
+        art["category"]        = best_cat
+        art["relevance_score"] = confidence
+        art["summary"]         = f"Nøkkelord-klassifisert ({best_cat}, {best_score} treff)"
+        art["brand"]           = ",".join(brands) if brands else None
+        relevant.append(art)
+
+    print(f"[INFO] {len(relevant)} artikler klassifisert lokalt (uten API)")
+    return relevant
+
+
 def classify_articles(articles: list[dict]) -> list[dict]:
+    """Klassifiserer artikler med Claude API."""
     client   = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     relevant = []
 
@@ -278,7 +406,7 @@ def classify_articles(articles: list[dict]) -> list[dict]:
     return relevant
 
 
-# ── Supabase ──────────────────────────────────────────────────────────────────
+# ── Lagring ──────────────────────────────────────────────────────────────────
 
 def save_to_supabase(articles: list[dict]) -> list[dict]:
     sb  = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
@@ -314,18 +442,52 @@ def save_to_supabase(articles: list[dict]) -> list[dict]:
         return []
 
 
+def save_to_json(articles: list[dict]) -> None:
+    """Lagrer artikler til lokal JSON-fil når Supabase ikke er tilgjengelig."""
+    outfile = f"articles_{datetime.now().strftime('%Y-%m-%d_%H%M')}.json"
+    payload = [
+        {
+            "title":           art["title"],
+            "url":             art["url"],
+            "source":          art["source"],
+            "published_at":    art.get("published_at"),
+            "ingress":         art.get("ingress", ""),
+            "summary":         art.get("summary", ""),
+            "category":        art.get("category", "annet"),
+            "relevance_score": art.get("relevance_score", 0),
+            "brand":           art.get("brand"),
+        }
+        for art in articles
+    ]
+    with open(outfile, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    print(f"[INFO] {len(payload)} artikler lagret til {outfile}")
+
+
 # ── Hovedflyt ─────────────────────────────────────────────────────────────────
 
 def main():
     print(f"[START] {datetime.now().isoformat()}")
+
+    has_api = bool(anthropic and os.environ.get("ANTHROPIC_API_KEY"))
+    has_db  = bool(create_client and os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_KEY"))
+
+    if not has_api:
+        print("[INFO] ANTHROPIC_API_KEY ikke satt – bruker lokal klassifisering")
+    if not has_db:
+        print("[INFO] Supabase ikke konfigurert – lagrer til lokal JSON-fil")
 
     articles = fetch_recent_articles()
     if not articles:
         print("[INFO] Ingen artikler passerte nøkkelord-filter. Avslutter.")
         return
 
-    classified = classify_articles(articles)
-    save_to_supabase(classified)
+    classified = classify_articles(articles) if has_api else classify_articles_local(articles)
+
+    if has_db:
+        save_to_supabase(classified)
+    else:
+        save_to_json(classified)
 
     print(f"[DONE] {datetime.now().isoformat()}")
 
