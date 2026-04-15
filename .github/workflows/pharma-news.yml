@@ -42,8 +42,8 @@ jobs:
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
         run: python main.py
 
-      - name: Kjør ukesdigest (kun fredag eller manuelt)
-        if: github.event.schedule == '0 7 * * 5' || github.event.inputs.run_digest == 'true'
+      - name: Kjør ukesdigest (kun fredag eller manuelt, krever API-nøkkel)
+        if: (github.event.schedule == '0 7 * * 5' || github.event.inputs.run_digest == 'true') && secrets.ANTHROPIC_API_KEY != ''
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
