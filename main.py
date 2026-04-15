@@ -366,10 +366,16 @@ def classify_articles_local(articles: list[dict]) -> list[dict]:
     return relevant
 
 
+class APIUnavailableError(Exception):
+    """Raised when the Claude API is unusable (auth, billing, etc.)."""
+    pass
+
+
 def classify_articles(articles: list[dict]) -> list[dict]:
     """Klassifiserer artikler med Claude API."""
     client   = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     relevant = []
+    consecutive_failures = 0
 
     for art in articles:
         try:
@@ -379,6 +385,7 @@ def classify_articles(articles: list[dict]) -> list[dict]:
                 system=CLASSIFY_SYSTEM,
                 messages=[{"role": "user", "content": f"Tittel: {art['title']}\nIngress: {art['ingress']}\nKilde: {art['source']}"}],
             )
+            consecutive_failures = 0
             raw = response.content[0].text.strip()
 
             # Fjern eventuelle markdown-backticks
@@ -399,8 +406,15 @@ def classify_articles(articles: list[dict]) -> list[dict]:
                 brands = result.get("brands", [])
                 art["brand"] = ",".join(brands) if brands else None
                 relevant.append(art)
+        except anthropic.BadRequestError as e:
+            print(f"[WARN] Klassifisering feilet for '{art['title'][:60]}': {e}")
+            consecutive_failures += 1
+            if consecutive_failures >= 3:
+                raise APIUnavailableError(f"API utilgjengelig etter {consecutive_failures} feil: {e}")
+        except anthropic.AuthenticationError as e:
+            raise APIUnavailableError(f"Ugyldig API-nøkkel: {e}")
         except Exception as e:
-            print(f"[WARN] Klassifisering feilet for '{art['title']}': {e}")
+            print(f"[WARN] Klassifisering feilet for '{art['title'][:60]}': {e}")
 
     print(f"[INFO] {len(relevant)} artikler klassifisert som relevante")
     return relevant
@@ -482,7 +496,15 @@ def main():
         print("[INFO] Ingen artikler passerte nøkkelord-filter. Avslutter.")
         return
 
-    classified = classify_articles(articles) if has_api else classify_articles_local(articles)
+    if has_api:
+        try:
+            classified = classify_articles(articles)
+        except APIUnavailableError as e:
+            print(f"[WARN] {e}")
+            print("[INFO] Faller tilbake til lokal klassifisering")
+            classified = classify_articles_local(articles)
+    else:
+        classified = classify_articles_local(articles)
 
     if has_db:
         save_to_supabase(classified)
