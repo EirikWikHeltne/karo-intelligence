@@ -126,7 +126,7 @@ KEYWORDS = [
     # English keywords (Reuters, NYT, The Economist)
     "skincare", "skin care", "eczema", "atopic", "moisturizer", "dermatology",
     "oral care", "toothpaste", "mouthwash", "dental",
-    "pharmacy", "pharmacies", "drugstore", "OTC", "over-the-counter",
+    "pharmacy", "pharmacies", "drugstore", "over-the-counter",
     "consumer health", "healthcare", "pharma", "pharmaceutical",
     "private equity", "acquisition", "merger", "buyout",
     "Beiersdorf", "Colgate", "Unilever", "L Oreal", "Johnson Johnson",
@@ -229,6 +229,15 @@ BRAND_KEYWORDS = {
 # ── RSS-henting ───────────────────────────────────────────────────────────────
 
 def parse_published(entry):
+    # feedparser forsøker selv å parse dato til struct_time – bruk det først,
+    # så faller vi tilbake til rå strenger (RFC 2822) for feeds som ikke gir oss det.
+    for attr in ("published_parsed", "updated_parsed"):
+        parsed = getattr(entry, attr, None)
+        if parsed:
+            try:
+                return datetime(*parsed[:6], tzinfo=timezone.utc)
+            except Exception:
+                pass
     for attr in ("published", "updated"):
         raw = getattr(entry, attr, None)
         if raw:
@@ -406,15 +415,13 @@ def classify_articles(articles: list[dict]) -> list[dict]:
                 brands = result.get("brands", [])
                 art["brand"] = ",".join(brands) if brands else None
                 relevant.append(art)
-        except anthropic.BadRequestError as e:
-            print(f"[WARN] Klassifisering feilet for '{art['title'][:60]}': {e}")
-            consecutive_failures += 1
-            if consecutive_failures >= 3:
-                raise APIUnavailableError(f"API utilgjengelig etter {consecutive_failures} feil: {e}")
         except anthropic.AuthenticationError as e:
             raise APIUnavailableError(f"Ugyldig API-nøkkel: {e}")
         except Exception as e:
             print(f"[WARN] Klassifisering feilet for '{art['title'][:60]}': {e}")
+            consecutive_failures += 1
+            if consecutive_failures >= 3:
+                raise APIUnavailableError(f"API utilgjengelig etter {consecutive_failures} feil: {e}")
 
     print(f"[INFO] {len(relevant)} artikler klassifisert som relevante")
     return relevant
@@ -458,7 +465,7 @@ def save_to_supabase(articles: list[dict]) -> list[dict]:
 
 def save_to_json(articles: list[dict]) -> None:
     """Lagrer artikler til lokal JSON-fil når Supabase ikke er tilgjengelig."""
-    outfile = f"articles_{datetime.now().strftime('%Y-%m-%d_%H%M')}.json"
+    outfile = f"articles_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H%MZ')}.json"
     payload = [
         {
             "title":           art["title"],
