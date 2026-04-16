@@ -26,7 +26,7 @@ def generate_digest(articles: list[dict]) -> dict:
 
     # Bygg artikkel-liste for Claude – inkluder sammendrag for bedre kontekst
     art_list = "\n\n".join([
-        f"[{a['category'].upper()}] {a['title']} ({a['source']}, score: {a.get('relevance_score',0)})\n{(a.get('summary') or '').strip()[:300]}"
+        f"[{(a.get('category') or 'annet').upper()}] {a.get('title', '')} ({a.get('source', 'ukjent')}, score: {a.get('relevance_score', 0)})\n{(a.get('summary') or '').strip()[:300]}"
         for a in articles[:30]
     ])
 
@@ -57,15 +57,10 @@ Svar KUN med gyldig JSON i dette formatet (ingen markdown, ingen forklaring):
 
     text = response.content[0].text.strip()
 
-    # Strip markdown code fences if Claude wraps response in ```json ... ```
-    if "```" in text:
-        text = text.split("```")[-2] if text.count("```") >= 2 else text
-        text = text.lstrip("json").strip()
-
-    # Extract JSON object if there's surrounding text
+    # Extract JSON object – robust mot markdown-fencing og omkringliggende tekst.
     start = text.find("{")
     end   = text.rfind("}") + 1
-    if start == -1 or end == 0:
+    if start == -1 or end <= start:
         raise ValueError(f"Ingen JSON funnet i Claude-svar: {text[:200]}")
     text = text[start:end]
 
@@ -73,12 +68,15 @@ Svar KUN med gyldig JSON i dette formatet (ingen markdown, ingen forklaring):
 
 
 def save_digest(sb, digest: dict, article_count: int):
+    now = datetime.now(timezone.utc)
+    # Bruk ukens mandag som week_start – stabilt uavhengig av hvilken dag digesten kjøres.
+    monday = (now - timedelta(days=now.weekday())).date()
     sb.table("weekly_summaries").insert({
         "title":         digest["title"],
         "summary":       digest["summary"],
         "article_count": article_count,
-        "week_start":    (datetime.now(timezone.utc) - timedelta(days=6)).date().isoformat(),
-        "created_at":    datetime.now(timezone.utc).isoformat(),
+        "week_start":    monday.isoformat(),
+        "created_at":    now.isoformat(),
     }).execute()
     print(f"[OK] Ukesdigest lagret: {digest['title']}")
 
