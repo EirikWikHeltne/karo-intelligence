@@ -261,17 +261,26 @@ def fetch_recent_articles() -> list[dict]:
         for url in urls:
             try:
                 feed = feedparser.parse(url)
+                total = len(feed.entries)
+                bozo_reason = ""
+                if getattr(feed, "bozo", 0):
+                    bozo_reason = f" bozo={type(feed.bozo_exception).__name__}: {feed.bozo_exception}"
+                old = no_title = no_keyword = kept = 0
                 for entry in feed.entries:
                     pub = parse_published(entry)
                     if pub and pub < cutoff:
+                        old += 1
                         continue
                     title   = getattr(entry, "title",   "").strip()
                     summary = getattr(entry, "summary", "").strip()
                     link    = getattr(entry, "link",    "").strip()
                     if not title or not link:
+                        no_title += 1
                         continue
                     if not keyword_match(title + " " + summary):
+                        no_keyword += 1
                         continue
+                    kept += 1
                     articles.append({
                         "source":       source,
                         "title":        title,
@@ -280,6 +289,7 @@ def fetch_recent_articles() -> list[dict]:
                         # Bruk nåtidspunkt som fallback hvis feeden mangler publiseringsdato
                         "published_at": (pub or datetime.now(timezone.utc)).isoformat(),
                     })
+                print(f"[FEED] {source} {url} → entries={total} old={old} no_title={no_title} no_keyword={no_keyword} kept={kept}{bozo_reason}")
             except Exception as e:
                 print(f"[WARN] Feil ved henting av {url}: {e}")
 
@@ -289,7 +299,7 @@ def fetch_recent_articles() -> list[dict]:
             seen.add(a["url"])
             unique.append(a)
 
-    print(f"[INFO] {len(unique)} unike artikler etter nøkkelord-filter")
+    print(f"[INFO] {len(unique)} unike artikler etter nøkkelord-filter (før dedup: {len(articles)})")
     return unique
 
 
@@ -432,6 +442,7 @@ def classify_articles(articles: list[dict]) -> list[dict]:
 def save_to_supabase(articles: list[dict]) -> list[dict]:
     sb  = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
     if not articles:
+        print("[INFO] Ingen artikler å lagre – hopper over Supabase-upsert.")
         return []
 
     payload = [
@@ -457,9 +468,13 @@ def save_to_supabase(articles: list[dict]) -> list[dict]:
         ).execute()
         saved = result.data or []
         print(f"[INFO] Upsert ferdig. Returnerte {len(saved)} nye rader (forsøkte {len(payload)}).")
+        if len(payload) and not saved:
+            print("[INFO] Ingen nye rader – alle URL-er var allerede i databasen (ON CONFLICT DO NOTHING).")
         return saved
     except Exception as e:
-        print(f"[WARN] DB-feil under bulk upsert: {e}")
+        import traceback
+        print(f"[ERROR] DB-feil under bulk upsert: {type(e).__name__}: {e}")
+        traceback.print_exc()
         return []
 
 
