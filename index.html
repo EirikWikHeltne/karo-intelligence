@@ -584,7 +584,7 @@
     </div>
     <div class="sources-section">
       <div class="sources-section-title" id="kw-title">Nøkkelord-filter</div>
-      <p class="cal-intro">En sak sendes videre til AI-vurdering hvis den treffer minst ett kjerne-ord, eller to kontekst-ord. Internasjonale kilder må alltid treffe et kjerne-ord. Saker med score under 65 skjules som standard.</p>
+      <p class="cal-intro">Saker scores med nøkkelord – ingen AI. Et Karo-merke gir 95. Et kjerne-ord gir 60–90 (høyere når det står i tittelen). Bare kontekst-ord gir 35–55. Bransjekilder (Farmatid, Dagens Medisin, DMP, Dagligvarehandelen) tas alltid med. Internasjonale kilder må treffe et kjerne-ord. Saker under 60 vises som «svake treff».</p>
       <div id="keywords-grid"></div>
     </div>
   </div>
@@ -880,12 +880,12 @@ const RSS_FEEDS = {
 };
 
 const KEYWORD_GROUPS = [
-  {label:"Kjerne-ord · direkte Karo-relevant", terms:["apobase", "apotek", "apotekforeningen", "apotekloven", "apotera", "atopic dermatitis", "atopisk", "barrierekrem", "beiersdorf", "bioderma", "boots apotek", "boots norge", "cerave", "cetaphil", "colgate", "consumer health", "decubal", "dermatolog", "direktoratet for medisinske produkter", "dmp", "eczema", "egenbehandling", "egenomsorg", "eksem", "eucerin", "farmasiet", "fluortannkrem", "flux fluor", "flux munn", "flux tann", "fuktighetskrem", "haleon", "hudkrem", "hudlege", "hudpleie", "hudsykdom", "ibuprofen", "ibux", "karies", "karo healthcare", "karo pharma", "kenvue", "konsumenthelse", "la roche-posay", "legemiddelgrossist", "legemiddelloven", "legemiddelverket", "legemidler utenom apotek", "locobase", "lua-ordningen", "moisturiser", "moisturizer", "mouthwash", "munnhygiene", "munnskyll", "munnvann", "nivea", "norsk medisinaldepot", "nurofen", "oral care", "oral health", "oral-b", "orkla health", "otc", "over-the-counter", "pain relief", "painkiller", "panodil", "paracet", "paracetamol", "paralgin", "pepsodent", "perrigo", "pillebruk", "pilleforbruk", "pinex", "psoriasis", "reseptfri", "reseptfrie", "reseptfrihet", "reseptfritt", "self-care", "selvmedisinering", "sensitiv hud", "sensodyne", "skin care", "skincare", "smertestillende", "solidox", "stada", "tannhelse", "tannkrem", "tannpleie", "toothpaste", "tørr hud", "vichy", "vitusapotek", "voltaren", "zendium"]},
-  {label:"Kontekst-ord · teller bare sammen med andre treff", terms:["acquisition", "allergi", "buyout", "coop", "dagligvare", "e-handel", "eqt", "farmasi", "folkehelse", "forbruker", "forkjølelse", "fusjon", "handlevaner", "helsekost", "helsepolitikk", "hylleplass", "inflasjon", "influencer", "influensa", "johnson & johnson", "kiwi", "kjedemakt", "kjøpekraft", "kjøper opp", "kkr", "kosttilskudd", "kronekurs", "l'oréal", "legemiddel", "legemidler", "loreal", "markedsføring", "matkjede", "matpris", "meny", "merger", "merkevare", "netthandel", "nordic capital", "norgesgruppen", "oppkjøp", "oppkjøpsfond", "pe-fond", "pharma", "pharmacy", "pollen", "prisvekst", "private equity", "procter & gamble", "reklame", "rema 1000", "solkrem", "sortiment", "sosiale medier", "spar", "sunscreen", "takeover", "unilever"]},
+  {label:"Kjerne-ord · direkte Karo-relevant", terms:["akne", "allergi", "antihistamin", "apobase", "apotek", "apotekets", "apotekforeningen", "apotekloven", "apotera", "atopi", "atopic dermatitis", "atopisk", "babyhud", "barnehud", "barrierekrem", "beiersdorf", "bepanthen", "bioderma", "bleieutslett", "boots apotek", "boots norge", "cerave", "cetaphil", "colgate", "consumer health", "decubal", "dental care", "dermatitt", "dermatolog", "direktoratet for medisinske produkter", "ditt apotek", "dmp", "dry skin", "dårlig ånde", "eczema", "egenbehandling", "egenomsorg", "eksem", "eucerin", "farmasiet", "farmasøyt", "feber", "fluor", "fluortannkrem", "flux fluor", "flux munn", "flux tann", "forkjølelse", "fotsopp", "fuktighetskrem", "galderma", "haleon", "helse og skjønnhet", "hodepine", "huden", "hudhelse", "hudkrem", "hudlege", "hudpleie", "hudpleieprodukt", "hudproblem", "hudsykdom", "hudtype", "håndkjøp", "ibuprofen", "ibux", "influensa", "karies", "karo healthcare", "karo pharma", "kenvue", "kløe", "kløende", "konsumenthelse", "kviser", "l'oréal", "la roche-posay", "legemiddelbruk", "legemiddelgrossist", "legemiddelloven", "legemiddelmangel", "legemiddelreklame", "legemiddelverket", "legemidler i butikk", "legemidler utenom apotek", "locobase", "loreal", "lua-ordningen", "markedsføring av legemidler", "medisinbruk", "medisinmangel", "migrene", "moisturiser", "moisturizer", "mouthwash", "munnhelse", "munnhygiene", "munnskyll", "munntørrhet", "munnvann", "neglesopp", "nesespray", "nettapotek", "nivea", "norsk medisinaldepot", "nurofen", "oral care", "oral health", "oral-b", "orkla health", "otc", "otc-markedet", "over-the-counter", "pain relief", "painkiller", "panodil", "paracet", "paracetamol", "paralgin", "pepsodent", "perrigo", "pharmacy chain", "pillebruk", "pilleforbruk", "pinex", "pollen", "procter & gamble", "psoriasis", "reseptfri", "reseptfrie", "reseptfrihet", "reseptfritt", "rosacea", "self-care", "selvmedisinering", "sensitiv hud", "sensodyne", "skin care", "skincare", "smertelindring", "smertestillende", "solidox", "solskadet hud", "sprukne hender", "stada", "sårheling", "sårpleie", "tannbørste", "tannhelse", "tannhelsetjeneste", "tannkjøtt", "tannkrem", "tannlege", "tannpleie", "tannråte", "tennene", "toothpaste", "tørr hud", "utslett", "viatris", "vichy", "vitusapotek", "voltaren", "weleda", "zendium"]},
+  {label:"Kontekst-ord · teller bare sammen med andre treff", terms:["acquisition", "bayer", "beauty", "bivirkning", "bunnpris", "buyout", "coop", "dagligvare", "detaljhandel", "e-handel", "egne merkevarer", "eqt", "europris", "extra", "farmasi", "fastlege", "fhi", "folkehelse", "folkehelseinstituttet", "forbruker", "fusjon", "handlevaner", "helsedirektoratet", "helsekost", "helsepolitikk", "hylleplass", "inflasjon", "influencer", "instagram", "johnson & johnson", "joker", "kampanje", "kicks", "kiwi", "kjedemakt", "kjøpekraft", "kjøper opp", "kkr", "kosmetikk", "kosttilskudd", "kronekurs", "lanserer", "lansering", "lavpris", "legemiddel", "legemidler", "leverandør", "lyko", "markedsføring", "matkjede", "matpris", "medisin", "medisiner", "meny", "merger", "merkevare", "netthandel", "nordic capital", "norgesgruppen", "oppkjøp", "oppkjøpsfond", "orkla", "pe-fond", "pharma", "pharmacy", "priskrig", "prisvekst", "private equity", "private label", "reklame", "rema 1000", "renteheving", "rentekutt", "skjønnhet", "sminke", "solkrem", "sortiment", "sosiale medier", "spar", "sunscreen", "takeover", "tiktok", "trend", "unilever", "varehandel", "velvære", "vitamin"]},
 ];
 
-// Saker under denne scoren skjules som standard (samme terskel som agenten bruker)
-const MIN_SCORE = 65;
+// Saker under denne scoren vises som "svake treff" (samme terskel som MIN_SHOWN_SCORE i main.py)
+const MIN_SCORE = 60;
 
 // ── Demo data (vises kun hvis databasen ikke svarer) ──────────────────────────
 const DEMO=[
@@ -918,9 +918,16 @@ function safeUrl(u){
 }
 function cssUrl(u){ return esc(safeUrl(u).replace(/['"()\\\s]/g,c=>encodeURIComponent(c))); }
 // Skjul tekniske plassholdere fra eldre, nøkkelord-klassifiserte saker
+// Eldre rader kan inneholde HTML fra feeden (f.eks. <a href="…">Tittel</a>) – vis kun teksten.
+const _decoder=document.createElement("textarea");
+function plain(s){
+  if(!s) return "";
+  _decoder.innerHTML=String(s).replace(/<[^>]*>/g," ");
+  return _decoder.value.replace(/\s+/g," ").trim();
+}
 function displaySummary(a){
-  const s=(a.summary||"").trim();
-  if(/^Nøkkelord-klassifisert/i.test(s)) return a.ingress?String(a.ingress).slice(0,240):"";
+  const s=plain(a.summary);
+  if(/^Nøkkelord-klassifisert/i.test(s)){ const i=plain(a.ingress); return i.length>240?i.slice(0,240).replace(/\s\S*$/,"")+"…":i; }
   return s.replace(/^\[Manuelt lagt til( av Karo-teamet)?\]\s*/,"");
 }
 function catLabel(id){ return (CAT_MAP[id]||{}).label||id||""; }
@@ -1173,7 +1180,10 @@ function applyFilters(){
 }
 
 function isStrong(a){
-  return (a.relevance_score||0)>=MIN_SCORE||getBrands(a).length>0;
+  if(getBrands(a).length) return true;
+  // Eldre rader med gammel, slapp nøkkelord-score (ryddes av agenten ved neste kjøring)
+  if(/^Nøkkelord-klassifisert/.test(a.summary||"")) return (a.relevance_score||0)>=70;
+  return (a.relevance_score||0)>=MIN_SCORE;
 }
 let weakCount=0;
 function toggleWeak(){ showWeak=!showWeak; applyFilters(); }
@@ -1270,7 +1280,7 @@ function renderArticles(arts){
         <span class="m-time">${formatTime(f.published_at||f.created_at)}</span>
         ${brands.map(b=>`<span class="af-brand-badge">★ ${esc(b)}</span>`).join("")}
       </div>
-      <a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener noreferrer" class="af-title">${esc(f.title)}</a>
+      <a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener noreferrer" class="af-title">${esc(plain(f.title))}</a>
       <div class="af-summary">${esc(displaySummary(f))}</div>
       ${feedbackHtml(f.id)}
     </article>`;
@@ -1295,7 +1305,7 @@ function renderArticles(arts){
           ${brands.map(b=>`<span class="m-brand">★ ${esc(b)}</span>`).join("")}
           ${a.relevance_score?`<span class="m-score" title="Relevans-score">▲${esc(a.relevance_score)}</span>`:""}
         </div>
-        <a href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer" class="ar-title-link"><h3 class="ar-title">${esc(a.title)}</h3></a>
+        <a href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer" class="ar-title-link"><h3 class="ar-title">${esc(plain(a.title))}</h3></a>
         <div class="ar-summary">${esc(displaySummary(a))}</div>
         ${feedbackHtml(a.id)}
       </div>
@@ -1428,9 +1438,9 @@ function openEditModal(id){
   if(!a) return;
 
   document.getElementById("edit-id").value        = a.id;
-  document.getElementById("edit-title").value     = a.title    || "";
+  document.getElementById("edit-title").value     = plain(a.title);
   document.getElementById("edit-source").value    = a.source   || "";
-  document.getElementById("edit-summary").value   = a.summary  || "";
+  document.getElementById("edit-summary").value   = displaySummary(a);
   document.getElementById("edit-score").value     = a.relevance_score || "";
   document.getElementById("edit-published").value = toDatetimeLocal(a.published_at);
   document.getElementById("edit-status").textContent = "";

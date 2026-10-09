@@ -1,7 +1,7 @@
 """
 Pharma News Agent – Karo Healthcare
-Henter RSS-feeds daglig, filtrerer på Karo-relevans, klassifiserer med Claude API
-(med en streng lokal reserveløsning), og lagrer relevante artikler i Supabase.
+Henter RSS-feeds daglig, scorer Karo-relevans med nøkkelord (ingen AI/API-kostnad),
+og lagrer artiklene i Supabase.
 """
 
 import os
@@ -15,11 +15,6 @@ from urllib.parse import quote_plus, urlparse
 import feedparser
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
-
-try:
-    import anthropic
-except ImportError:
-    anthropic = None
 
 try:
     from supabase import create_client
@@ -80,6 +75,9 @@ RSS_FEEDS = {
 # (Fierce Pharma sendte tidligere alle 25 saker videre fordi "pharma" traff alt.)
 STRICT_SOURCES = {"NYT", "The Economist", "Fierce Pharma", "SSB"}
 
+# Bransjekilder der nesten alt er relevant – alle saker tas med, med en grunnscore.
+TRADE_SOURCES = {"Farmatid": 60, "Dagens Medisin": 50, "DMP": 55, "Dagligvarehandelen": 50}
+
 FEED_TIMEOUT = 20
 FEED_HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; KaroIntelligence/1.0; +https://karo-intelligence.vercel.app)",
@@ -99,51 +97,69 @@ CORE_TERMS = {
         "ibux", "paracet", "flux tann", "flux munn", "flux fluor",
     ],
     "dermatologi": [
-        "hudpleie", r"re:eksem(?!pe)", "psoriasis", "atopisk", "tørr hud", "sensitiv hud",
-        "barrierekrem", "fuktighetskrem", "hudkrem", "hudlege", "hudsykdom", "dermatolog",
-        "skincare", "skin care", "eczema", "atopic dermatitis", "moisturiser", "moisturizer",
+        "hudpleie", r"re:eksem(?!pe)", "psoriasis", "atopisk", "atopi", "tørr hud", "sensitiv hud",
+        "barrierekrem", "fuktighetskrem", "hudkrem", "hudlege", "hudsykdom", "hudhelse",
+        "hudproblem", "hudtype", "huden", "dermatitt", "dermatolog", "akne", "kviser", "rosacea",
+        "utslett", "kløe", "kløende", "bleieutslett", "babyhud", "barnehud", "sprukne hender",
+        "sårpleie", "sårheling", "fotsopp", "neglesopp", "hudpleieprodukt", "solskadet hud",
+        "skincare", "skin care", "eczema", "atopic dermatitis", "dry skin", "moisturiser", "moisturizer",
     ],
     "oral-care": [
-        "tannpleie", "tannkrem", "munnskyll", "munnvann", "tannhelse", "karies",
-        "munnhygiene", "fluortannkrem", "oral care", "oral health", "toothpaste", "mouthwash",
+        "tannpleie", "tannkrem", "tannbørste", "munnskyll", "munnvann", "tannhelse", "tannlege",
+        "tannråte", "tannkjøtt", "tennene", "karies", "munnhygiene", "munnhelse", "munntørrhet",
+        "dårlig ånde", "fluor", "fluortannkrem", "tannhelsetjeneste",
+        "oral care", "oral health", "toothpaste", "mouthwash", "dental care",
     ],
     "apotek": [
         "apotek", "vitusapotek", "boots apotek", "boots norge", "farmasiet", "apotera",
-        "apotekforeningen", "legemiddelgrossist", "norsk medisinaldepot",
-        "reseptfri", "reseptfritt", "reseptfrie", "otc", "egenomsorg", "selvmedisinering",
-        "egenbehandling", "smertestillende", "ibuprofen", "paracetamol", "pillebruk",
-        "pilleforbruk", "legemidler utenom apotek", "lua-ordningen",
-        "over-the-counter", "self-care", "painkiller", "pain relief",
+        "ditt apotek", "nettapotek", "apotekforeningen", "farmasøyt", "legemiddelgrossist",
+        "norsk medisinaldepot", "reseptfri", "reseptfritt", "reseptfrie", "håndkjøp", "otc",
+        "egenomsorg", "selvmedisinering", "egenbehandling", "smertestillende", "smertelindring",
+        "ibuprofen", "paracetamol", "pillebruk", "pilleforbruk", "medisinbruk", "legemiddelbruk",
+        "legemidler utenom apotek", "legemidler i butikk", "lua-ordningen", "legemiddelmangel",
+        "medisinmangel", "hodepine", "migrene", "feber", "forkjølelse", "influensa", "allergi",
+        "pollen", "antihistamin", "nesespray",
+        "over-the-counter", "self-care", "painkiller", "pain relief", "pharmacy chain",
     ],
     "konkurrenter": [
         "beiersdorf", "eucerin", "nivea", "cerave", "la roche-posay", "vichy", "cetaphil",
-        "bioderma", "haleon", "kenvue", "sensodyne", "colgate", "oral-b", "zendium",
-        "solidox", "pepsodent", "panodil", "pinex", "paralgin", "voltaren", "nurofen",
-        "orkla health", "perrigo", "stada",
+        "bioderma", "galderma", "bepanthen", "weleda", "l'oréal", "loreal", "apotekets",
+        "haleon", "kenvue", "sensodyne", "colgate", "oral-b", "zendium", "solidox", "pepsodent",
+        "procter & gamble", "panodil", "pinex", "paralgin", "voltaren", "nurofen", "orkla health",
+        "perrigo", "stada", "viatris",
     ],
-    "M&A": ["consumer health", "konsumenthelse"],
+    "M&A": ["consumer health", "konsumenthelse", "otc-markedet", "helse og skjønnhet"],
     "regulatorisk": [
         "legemiddelverket", "direktoratet for medisinske produkter", "dmp",
-        "legemiddelloven", "apotekloven", "reseptfrihet",
+        "legemiddelloven", "apotekloven", "reseptfrihet", "legemiddelreklame",
+        "markedsføring av legemidler",
     ],
 }
 CONTEXT_TERMS = {
     "dagligvare": [
-        "dagligvare", "rema 1000", "norgesgruppen", "coop", "kiwi", "meny", "spar",
-        "hylleplass", "sortiment", "matkjede", "kjedemakt", "netthandel", "e-handel",
+        "dagligvare", "rema 1000", "norgesgruppen", "coop", "kiwi", "meny", "spar", "joker",
+        "extra", "bunnpris", "europris", "lyko", "kicks", "hylleplass", "sortiment",
+        "matkjede", "kjedemakt", "priskrig", "lavpris", "netthandel", "e-handel", "detaljhandel",
+        "varehandel", "leverandør", "egne merkevarer", "private label",
     ],
     "M&A": [
         "oppkjøp", "kjøper opp", "fusjon", "private equity", "oppkjøpsfond", "pe-fond",
         "kkr", "eqt", "nordic capital", "acquisition", "merger", "buyout", "takeover",
     ],
-    "forbrukertrender": ["forbruker", "kjøpekraft", "matpris", "prisvekst", "handlevaner"],
-    "økonomi": ["inflasjon", "kronekurs"],
-    "markedsføring": ["influencer", "markedsføring", "reklame", "merkevare", "sosiale medier"],
+    "forbrukertrender": [
+        "forbruker", "kjøpekraft", "matpris", "prisvekst", "handlevaner", "kosmetikk",
+        "skjønnhet", "sminke", "velvære", "beauty", "trend",
+    ],
+    "økonomi": ["inflasjon", "kronekurs", "renteheving", "rentekutt"],
+    "markedsføring": [
+        "influencer", "markedsføring", "reklame", "merkevare", "sosiale medier", "tiktok",
+        "instagram", "kampanje", "lansering", "lanserer",
+    ],
     "helsepolitikk": [
-        "folkehelse", "helsepolitikk", "legemiddel", "legemidler", "farmasi", "pharmacy",
-        "pharma", "helsekost", "kosttilskudd", "allergi", "pollen", "solkrem", "sunscreen",
-        "forkjølelse", "influensa", "unilever", "procter & gamble", "johnson & johnson",
-        "l'oréal", "loreal",
+        "folkehelse", "helsepolitikk", "helsedirektoratet", "folkehelseinstituttet", "fhi",
+        "legemiddel", "legemidler", "medisin", "medisiner", "farmasi", "pharmacy", "pharma",
+        "helsekost", "kosttilskudd", "vitamin", "solkrem", "sunscreen", "bivirkning",
+        "unilever", "johnson & johnson", "bayer", "orkla", "fastlege",
     ],
 }
 
@@ -162,10 +178,9 @@ BRAND_KEYWORDS = {
     "Paracet":  ["paracet"],
 }
 
-CLAUDE_MODEL   = "claude-haiku-4-5-20251001"
 LOOKBACK_HOURS = 26
-MIN_CLAUDE_SCORE = 65   # Claude-score som kreves for å lagre en sak
-MIN_LOCAL_SCORE  = 60   # lokal score som kreves når API-et ikke er tilgjengelig
+MIN_STORE_SCORE = 40   # saker under dette lagres ikke
+MIN_SHOWN_SCORE = 60   # appen viser saker fra denne scoren som standard (svakere er "svake treff")
 
 
 def _compile(term: str) -> re.Pattern:
@@ -201,6 +216,8 @@ def find_brands(text: str) -> list[str]:
 
 
 def passes_prefilter(source: str, text: str) -> bool:
+    if source in TRADE_SOURCES:
+        return True
     core, ctx = match_terms(text)
     if core:
         return True
@@ -305,6 +322,7 @@ def fetch_recent_articles() -> list[dict]:
                     continue
                 kept += 1
                 articles.append({
+                    "feed":         source,
                     "source":       art_source,
                     "title":        title,
                     "url":          link,
@@ -329,46 +347,7 @@ def fetch_recent_articles() -> list[dict]:
     return unique
 
 
-# ── Claude-klassifisering ─────────────────────────────────────────────────────
-
-CLASSIFY_SYSTEM = """Du er markedsintelligensanalytiker for Karo Healthcare Norge. Du filtrerer nyheter
-for markeds- og salgsteamet. Teamet vil KUN se saker de kan handle på – heller få gode saker enn mange svake.
-
-OM KARO I NORGE (eid av PE-fondet KKR):
-• Decubal og Locobase – fuktighets-/barrierekremer mot tørr hud og eksem. Selges KUN via apotek.
-• Apobase – hudpleie, apotek.
-• Flux – fluorskyll/tannpleie. Apotek og dagligvare.
-• Ibux (ibuprofen) og Paracet (paracetamol) – reseptfrie smertestillende. Apotek og dagligvare (LUA).
-Kunder/kanaler: apotekkjedene (Apotek 1, Vitusapotek, Boots, Farmasiet, Apotera, Ditt Apotek),
-grossister (NMD, Alliance), dagligvare (NorgesGruppen, Rema 1000, Coop).
-Konkurrenter: Beiersdorf (Eucerin, Nivea), L'Oréal (CeraVe, La Roche-Posay), Haleon (Sensodyne, Voltaren,
-Panodil), Kenvue, Colgate, Orkla Health, Perrigo, apotekkjedenes egne merker.
-
-SCORE (0–100) – hvor nyttig er saken for Karos markeds- og salgsteam i Norge/Norden?
-90–100: Nevner et Karo-merke, Karo selv, eller en vesentlig hendelse hos en konkurrent eller kunde
-        (lansering, oppkjøp, tilbakekalling, kjedeendring, prisendring).
-75–89:  Direkte i Karos kategorier i Norge/Norden: hudpleie/eksem, tannhelse, reseptfrie smertestillende,
-        apotekmarkedet, regelverk for reseptfrie legemidler/apotek/markedsføring av legemidler.
-60–74:  Klar indirekte effekt: dagligvarekjedenes helse/skjønnhet-sortiment, M&A i consumer health,
-        forbrukertrender innen helse og egenomsorg, folkehelsedata om hud, tenner eller smertestillende.
-0–59:   Alt annet. Eksempler: generell makroøkonomi, renter, generell prisvekst, kriminalitet, sport,
-        politikk uten kobling til helse/handel, reseptbelagte legemidler, biotek-studier, amerikansk
-        legemiddelpris/forsikring, saker der et nøkkelord bare er nevnt i forbifarten.
-
-"relevant" = true kun hvis score >= 65. Vær streng: ved tvil, sett lavere score.
-"brands": Karo-merker som faktisk er nevnt i teksten (Decubal, Locobase, Apobase, Flux, Ibux, Paracet), ellers [].
-"summary": 1–2 setninger på norsk: hva skjedde, og konkret hva det betyr for Karo (hvilket merke, kanal eller
-konkurrent). Ikke gjenta tittelen. Ikke skriv generelle fraser som "kan være relevant for Karo".
-
-Kategorier: M&A | apotek | dagligvare | dermatologi | oral-care | konkurrenter | regulatorisk |
-forbrukertrender | helsepolitikk | markedsføring | økonomi | annet
-
-Svar KUN med gyldig JSON, uten markdown:
-{"relevant": true, "score": 82, "category": "apotek", "brands": [], "summary": "..."}"""
-
-VALID_CATEGORIES = {"M&A", "apotek", "dagligvare", "dermatologi", "oral-care", "konkurrenter",
-                    "regulatorisk", "forbrukertrender", "helsepolitikk", "markedsføring", "økonomi", "annet"}
-
+# ── Nøkkelord-scoring ─────────────────────────────────────────────────────────
 
 def _local_category(core, ctx, brands) -> str:
     if brands:
@@ -383,112 +362,50 @@ def _local_category(core, ctx, brands) -> str:
     return max(weights, key=weights.get) if weights else "annet"
 
 
-def local_score(title: str, ingress: str) -> tuple[int, str, list[str]]:
-    """Regelbasert Karo-score. Uten kjerne-treff blir maks 45 – dvs. aldri lagret."""
+def local_score(title: str, ingress: str, source: str = "") -> tuple[int, str, list[str]]:
+    """Karo-relevans 0–95 fra nøkkelord.
+    Karo-merke → 95. Kjerne-ord → 60–90 (høyere i tittel / flere treff).
+    Bransjekilde uten kjerne-ord → grunnscore. Kun kontekst-ord → 35–55 ("svake treff")."""
     text = f"{title} {ingress}"
     core, ctx = match_terms(text)
     core_terms = {t for _, t in core}
     ctx_terms  = {t for _, t in ctx}
     brands = find_brands(text)
-    if core_terms:
-        score = 40 + 15 * min(len(core_terms), 3) + 5 * min(len(ctx_terms), 3)
-        title_core, _ = match_terms(title)
-        if title_core:
-            score += 10
-    else:
-        score = 25 + 5 * min(len(ctx_terms), 4)
     if brands or any(c == "karo" for c, _ in core):
-        score += 30
-    elif any(p.search(text) for p in NOISE_PATTERNS):
-        score -= 25
-    return max(0, min(score, 95)), _local_category(core, ctx, brands), brands
+        return 95, _local_category(core, ctx, brands), brands
+    if core_terms:
+        title_core, _ = match_terms(title)
+        score = 60 + (10 if title_core else 0) + 5 * min(len(core_terms) - 1, 3) + 2 * min(len(ctx_terms), 3)
+        score = min(score, 90)
+    elif source in TRADE_SOURCES:
+        score = TRADE_SOURCES[source] + 3 * min(len(ctx_terms), 3)
+    else:
+        score = 35 + 5 * min(len(ctx_terms), 4)
+    if any(p.search(text) for p in NOISE_PATTERNS):
+        score -= 20
+    return max(0, score), _local_category(core, ctx, brands), brands
 
 
-def classify_articles_local(articles: list[dict]) -> list[dict]:
-    """Lokal klassifisering – brukes når Claude API ikke er tilgjengelig."""
-    relevant = []
-    for art in articles:
-        score, cat, brands = local_score(art["title"], art.get("ingress", ""))
-        if score < MIN_LOCAL_SCORE:
-            continue
-        ingress = art.get("ingress", "")
-        art["category"]        = cat
-        art["relevance_score"] = score
-        # Vis artikkelens egen ingress i appen i stedet for en teknisk merknad
-        art["summary"]         = (ingress[:240].rsplit(" ", 1)[0] + "…") if len(ingress) > 240 else ingress
-        art["brand"]           = ",".join(brands) if brands else None
-        relevant.append(art)
-
-    print(f"[INFO] {len(relevant)} av {len(articles)} artikler holdt lokal relevans-terskel ({MIN_LOCAL_SCORE})")
-    return relevant
-
-
-class APIUnavailableError(Exception):
-    """Raised when the Claude API is unusable (auth, billing, etc.).
-    Bærer med seg det som allerede er klassifisert, og det som gjenstår."""
-    def __init__(self, msg, relevant=None, remaining=None):
-        super().__init__(msg)
-        self.relevant  = relevant or []
-        self.remaining = remaining or []
-
-
-def _parse_json(text: str) -> dict:
-    start, end = text.find("{"), text.rfind("}") + 1
-    if start == -1 or end <= start:
-        raise ValueError(f"Ingen JSON i svar: {text[:120]}")
-    return json.loads(text[start:end])
+def snippet(text: str, n: int = 240) -> str:
+    text = clean_text(text)
+    return (text[:n].rsplit(" ", 1)[0] + "…") if len(text) > n else text
 
 
 def classify_articles(articles: list[dict]) -> list[dict]:
-    """Klassifiserer artikler med Claude API."""
-    client   = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"].strip())
-    relevant = []
-    consecutive_failures = 0
-    streak_start = 0
-
-    for i, art in enumerate(articles):
-        if consecutive_failures == 0:
-            streak_start = i
-        try:
-            response = client.messages.create(
-                model=CLAUDE_MODEL,
-                max_tokens=400,
-                system=CLASSIFY_SYSTEM,
-                messages=[{"role": "user", "content": f"Kilde: {art['source']}\nTittel: {art['title']}\nIngress: {art['ingress']}"}],
-            )
-            consecutive_failures = 0
-            raw = next((b.text for b in response.content if b.type == "text"), "")
-            result = _parse_json(raw)
-            score = int(result.get("score", result.get("confidence", 0)) or 0)
-            print(f"[CLAUDE] {score:3d} {'✓' if score >= MIN_CLAUDE_SCORE else '·'} {art['source']}: {art['title'][:70]}")
-            if result.get("relevant") and score >= MIN_CLAUDE_SCORE:
-                cat = result.get("category", "annet")
-                art["category"]        = cat if cat in VALID_CATEGORIES else "annet"
-                art["relevance_score"] = score
-                art["summary"]         = result.get("summary", "")
-                # Stol bare på merker som faktisk står i teksten
-                text_brands = set(find_brands(f"{art['title']} {art['ingress']}"))
-                brands = [b for b in result.get("brands", []) if b in BRAND_KEYWORDS] or sorted(text_brands)
-                art["brand"] = ",".join(brands) if brands else None
-                relevant.append(art)
-        except anthropic.AuthenticationError as e:
-            raise APIUnavailableError(f"Ugyldig API-nøkkel: {e}", relevant, articles[i:])
-        except anthropic.BadRequestError as e:
-            # F.eks. "credit balance is too low" – gjelder alle kall, ingen vits å fortsette
-            if "credit balance" in str(e).lower():
-                raise APIUnavailableError("Anthropic-kontoen er tom for kreditt – fyll på under Plans & Billing",
-                                          relevant, articles[i:])
-            print(f"[WARN] Klassifisering feilet for '{art['title'][:60]}': {e}")
-            consecutive_failures += 1
-        except Exception as e:
-            print(f"[WARN] Klassifisering feilet for '{art['title'][:60]}': {e}")
-            consecutive_failures += 1
-        if consecutive_failures >= 3:
-            raise APIUnavailableError(f"API utilgjengelig etter {consecutive_failures} feil på rad",
-                                      relevant, articles[streak_start:])
-
-    print(f"[INFO] {len(relevant)} av {len(articles)} artikler vurdert som relevante av Claude (terskel {MIN_CLAUDE_SCORE})")
-    return relevant
+    """Scorer artikler med nøkkelord og beholder alt over MIN_STORE_SCORE."""
+    kept = []
+    for art in articles:
+        score, cat, brands = local_score(art["title"], art.get("ingress", ""), art.get("feed", art["source"]))
+        if score < MIN_STORE_SCORE:
+            continue
+        art["category"]        = cat
+        art["relevance_score"] = score
+        art["summary"]         = snippet(art.get("ingress", ""))
+        art["brand"]           = ",".join(brands) if brands else None
+        kept.append(art)
+    strong = sum(1 for a in kept if a["relevance_score"] >= MIN_SHOWN_SCORE)
+    print(f"[INFO] {len(kept)} av {len(articles)} artikler lagres ({strong} sterke treff ≥ {MIN_SHOWN_SCORE})")
+    return kept
 
 
 # ── Lagring ──────────────────────────────────────────────────────────────────
@@ -524,6 +441,38 @@ def known_urls(sb) -> set[str]:
     except Exception as e:
         print(f"[WARN] Kunne ikke hente eksisterende URL-er: {e}")
         return set()
+
+
+def repair_old_rows(sb) -> None:
+    """Rydd i eldre rader: fjern HTML fra titler (f.eks. Fierce Pharma sine <a href>-titler)
+    og erstatt tekniske "Nøkkelord-klassifisert"-sammendrag med ingress og ny score.
+    Rader som er fikset matcher ikke lenger, så dette er i praksis en engangsjobb."""
+    try:
+        rows = {}
+        for q in (sb.table("articles").select("id,title,ingress,source,summary,relevance_score")
+                    .like("summary", "Nøkkelord-klassifisert%").limit(1000),
+                  sb.table("articles").select("id,title,ingress,source,summary,relevance_score")
+                    .like("title", "%<%").limit(1000)):
+            for r in (q.execute().data or []):
+                rows[r["id"]] = r
+    except Exception as e:
+        print(f"[WARN] Kunne ikke hente eldre rader for opprydding: {e}")
+        return
+    fixed = 0
+    for r in rows.values():
+        title   = clean_text(r.get("title", "")) or r.get("title", "")
+        ingress = clean_text(r.get("ingress", ""))
+        update  = {"title": title, "ingress": ingress}
+        if (r.get("summary") or "").startswith("Nøkkelord-klassifisert"):
+            score, cat, brands = local_score(title, ingress, r.get("source", ""))
+            update.update({"summary": snippet(ingress), "relevance_score": score, "category": cat})
+        try:
+            sb.table("articles").update(update).eq("id", r["id"]).execute()
+            fixed += 1
+        except Exception as e:
+            print(f"[WARN] Kunne ikke rydde rad {r['id']}: {e}")
+    if rows:
+        print(f"[INFO] Ryddet {fixed} eldre rader (HTML i tittel / tekniske sammendrag)")
 
 
 def save_to_supabase(sb, articles: list[dict]) -> bool:
@@ -592,11 +541,7 @@ def main():
     print(f"[START] {datetime.now().isoformat()}")
 
     sb_url, sb_key = supabase_env()
-    has_api = bool(anthropic and os.environ.get("ANTHROPIC_API_KEY", "").strip())
-    has_db  = bool(create_client and sb_url and sb_key)
-
-    if not has_api:
-        print("::warning::ANTHROPIC_API_KEY ikke satt – bruker lokal (regelbasert) klassifisering")
+    has_db = bool(create_client and sb_url and sb_key)
     if not has_db:
         print("[INFO] Supabase ikke konfigurert – lagrer til lokal JSON-fil")
 
@@ -605,6 +550,7 @@ def main():
         if not check_supabase_host(sb_url):
             sys.exit(1)
         sb = create_client(sb_url, sb_key)
+        repair_old_rows(sb)
 
     articles = fetch_recent_articles()
     if sb is not None:
@@ -616,14 +562,7 @@ def main():
         print("[INFO] Ingen nye artikler passerte relevans-filteret. Avslutter.")
         return
 
-    if has_api:
-        try:
-            classified = classify_articles(articles)
-        except APIUnavailableError as e:
-            print(f"::warning::Claude API utilgjengelig: {e}. Bruker streng lokal klassifisering for {len(e.remaining)} saker.")
-            classified = e.relevant + classify_articles_local(e.remaining)
-    else:
-        classified = classify_articles_local(articles)
+    classified = classify_articles(articles)
 
     if sb is not None:
         if not save_to_supabase(sb, classified):
