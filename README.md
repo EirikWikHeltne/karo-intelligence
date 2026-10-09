@@ -9,7 +9,7 @@ Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra n
 ## Hvordan det fungerer
 
 ```
-RSS-feeds (14 kilder)
+RSS-feeds (21 kilder)
        ↓
 Nøkkelord-filter (~110 ord)
        ↓
@@ -20,7 +20,7 @@ Supabase (database)
 Vercel (webapp)
 ```
 
-**Daglig** (man–fre kl. 07:00): GitHub Actions kjører `main.py` → nye artikler lagres i databasen → vises i appen umiddelbart.
+**Daglig** (man–fre kl. 07:00 og 13:00): GitHub Actions kjører `main.py` → nye artikler lagres i databasen → vises i appen umiddelbart.
 
 **Ukentlig** (fre kl. 08:00): `weekly_digest.py` genererer en AI-oppsummering av ukens viktigste saker → vises som banner øverst i appen.
 
@@ -37,9 +37,8 @@ Vercel (webapp)
 ├── .github/
 │   └── workflows/
 │       └── pharma-news.yml      # GitHub Actions (daglig + ukentlig)
-└── webapp/
-    ├── index.html               # Frontend (statisk, hostet på Vercel)
-    └── og-image.png             # Open Graph-bilde for deling
+├── index.html                   # Frontend (statisk, hostet på Vercel)
+└── og-image.png                 # Open Graph-bilde for deling
 ```
 
 ---
@@ -75,7 +74,7 @@ Legg inn følgende under **Settings → Secrets → Actions** i GitHub-repoet:
 ### 4. Vercel
 
 1. Importer repoet på [vercel.com](https://vercel.com)
-2. Sett **Root Directory** til `webapp`
+2. La **Root Directory** stå som repo-roten
 3. Ingen build-kommando trengs – det er en statisk HTML-fil
 
 ---
@@ -120,21 +119,28 @@ Gå til **Actions → Pharma News Agent → Run workflow**. Du kan velge å kjø
 
 ## Kilder
 
-**Norske (11):** VG, E24, NRK, Dagbladet, Aftenposten, Dagsavisen, DN, Finansavisen, Nettavisen, TV2, Dagens Medisin
+**Norske nyheter (13):** VG, E24, NRK, Dagbladet, Aftenposten, Dagsavisen, DN, Finansavisen, Nettavisen, TV2, Dagens Medisin, Farmatid, Dagligvarehandelen
 
-**Internasjonale (3):** Reuters, NYT, The Economist
+**Myndigheter (4):** FHI, SSB, DMP, Helsedirektoratet
+
+**Internasjonale (4):** Reuters, NYT, The Economist, Fierce Pharma
+
+Nøkkelord og kildeliste i `index.html` speiler `main.py` – oppdater begge ved endring.
 
 ---
 
 ## Webapp-funksjoner
 
 - **Dagens brief** – toppsak med bilde + artikelliste siste 24 timer
-- **Ukesdigest** – AI-generert oppsummering av ukens viktigste (vises fredag)
-- **Arkiv & søk** – fulltekstsøk, filtrering på kilde og kategori
+- **Ukesdigest** – AI-generert oppsummering av ukens viktigste, vises øverst i Dagens brief i 7 dager (kan skjules)
+- **Helg/stille dager** – finnes ingen saker siste 24 timer, vises de siste sakene i stedet for en tom side
+- **Arkiv & søk** – fulltekstsøk, filtrering på kilde, kategori, merkevare og dato; «Last inn eldre saker» henter mer historikk
 - **Karo brand-badge** – artikler som nevner Decubal, Locobase, Apobase eller Flux merkes automatisk
 - **+ Legg til artikkel** – teamet kan manuelt legge inn URL-er direkte i appen
 - **Tilbakemelding** – tommel opp/ned per artikkel for kalibrering av agenten
 - **Mobil** – bunnnavigasjon optimert for iOS Safari
+- **Mørkt tema** – følger systemet, kan byttes med ◐ i toppen
+- **Snarveier** – `/` hopper til søk, `Esc` lukker dialoger; visningen ligger i URL-en (`#brief`, `#arkiv`, `#kilder`)
 
 ---
 
