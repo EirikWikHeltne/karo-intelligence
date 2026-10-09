@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#faf9f7" />
+  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151311" media="(prefers-color-scheme: dark)" />
+  <meta name="description" content="Daglig brief om norsk farmasi, apotek og helse – drevet av AI." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231a1714'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-style='italic' font-size='40' text-anchor='middle' fill='%23faf9f7'%3EK%3C/text%3E%3C/svg%3E" />
   <title>Karo Intelligence</title>
+  <script>
+    // Sett tema før første render for å unngå blink
+    try { const t = localStorage.getItem("karo-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
   <meta property="og:title" content="Karo Intelligence · Markedsintelligens" />
   <meta property="og:description" content="Daglig brief om norsk farmasi, apotek og helse – drevet av AI." />
   <meta property="og:image" content="https://karo-intelligence.vercel.app/og-image.png" />
@@ -25,8 +33,50 @@
       --sans: 'Geist',system-ui,sans-serif;
       --max: 960px;
       --pad: clamp(16px, 4vw, 32px);
+      --card: #f3f0eb;
+      --overlay: rgba(26,23,20,0.55);
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #151311; --rule: #2a2622; --rule-dk: #3b3630;
+        --ink-1: #f2eee8; --ink-2: #d9d3c9; --ink-3: #a59d92;
+        --ink-4: #7d756b; --ink-5: #4f4a43;
+        --green: #74c39a; --red: #e58a8a;
+        --card: #1e1b18; --overlay: rgba(0,0,0,0.65);
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #151311; --rule: #2a2622; --rule-dk: #3b3630;
+      --ink-1: #f2eee8; --ink-2: #d9d3c9; --ink-3: #a59d92;
+      --ink-4: #7d756b; --ink-5: #4f4a43;
+      --green: #74c39a; --red: #e58a8a;
+      --card: #1e1b18; --overlay: rgba(0,0,0,0.65);
+      color-scheme: dark;
     }
     html { font-size: 16px; }
+    :focus-visible { outline: 2px solid var(--ink-1); outline-offset: 2px; }
+    .theme-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 2px 7px; font-family: var(--mono); font-size: 11px; line-height: 1.2; color: var(--ink-3); cursor: pointer; transition: color .15s, border-color .15s; }
+    .theme-btn:hover { color: var(--ink-1); border-color: var(--ink-2); }
+    .masthead-right { display: flex; align-items: center; gap: 10px; }
+
+    /* ── Weekly digest ── */
+    .digest { background: var(--card); border-left: 2px solid var(--ink-1); border-radius: 0 3px 3px 0; padding: 18px 20px 16px; margin-bottom: 28px; position: relative; }
+    .digest-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; padding-right: 32px; }
+    .digest-title { font-family: var(--serif); font-size: clamp(20px, 3.4vw, 26px); font-weight: 500; line-height: 1.2; color: var(--ink-1); margin-bottom: 10px; }
+    .digest-body { font-family: var(--serif); font-size: 16px; line-height: 1.65; color: var(--ink-2); max-width: 700px; }
+    .digest.collapsed .digest-body { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .digest-toggle { background: none; border: none; padding: 8px 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; }
+    .digest-toggle:hover { color: var(--ink-1); }
+    .digest-close { position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; color: var(--ink-4); cursor: pointer; min-width: 36px; min-height: 36px; }
+    .digest-close:hover { color: var(--ink-1); }
+
+    /* ── Notices & misc ── */
+    .notice { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--red); border: 1px solid var(--red); border-radius: 2px; padding: 8px 12px; margin-bottom: 20px; }
+    .more-wrap { display: flex; justify-content: center; padding: 28px 0 0; }
+    .empty-reset { display: inline-block; margin-top: 14px; background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 6px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); cursor: pointer; }
+    .empty-reset:hover { border-color: var(--ink-2); color: var(--ink-1); }
     body { background: var(--bg); color: var(--ink-2); font-family: var(--sans); font-weight: 300; min-height: 100vh; -webkit-font-smoothing: antialiased; }
     .shell { max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
 
@@ -98,6 +148,8 @@
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(to top, rgba(26,23,20,0.55) 0%, transparent 60%);
     }
+    .af-hero, .ar-img { background-color: var(--rule);
+    }
     .af-hero-cat {
       position: absolute; bottom: 14px; left: 16px; z-index: 1;
       font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
@@ -109,7 +161,7 @@
     .af-title { font-family: var(--serif); font-size: clamp(22px, 4.5vw, 36px); font-weight: 400; line-height: 1.18; color: var(--ink-1); letter-spacing: -0.01em; margin-bottom: 10px; text-decoration: none; display: block; transition: opacity .15s; }
     .af-title:hover { opacity: 0.7; }
     .af-summary { font-family: var(--serif); font-size: 15px; font-style: italic; line-height: 1.65; color: var(--ink-3); max-width: 620px; }
-    .af-brand-badge { display: inline-flex; align-items: center; gap: 4px; background: #1a1714; color: #faf9f7; font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; }
+    .af-brand-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--ink-1); color: var(--bg); font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; }
 
     /* ── Article rows ── */
     .articles-list { display: flex; flex-direction: column; }
@@ -139,10 +191,10 @@
     .ar-feedback { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
     .fb-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 4px 10px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; color: var(--ink-4); cursor: pointer; transition: all .12s; min-height: 28px; }
     .fb-btn:hover { color: var(--ink-2); border-color: var(--ink-3); }
-    .fb-btn.up.voted { color: var(--green); border-color: var(--green); background: #2d6a4f0f; }
+    .fb-btn.up.voted { color: var(--green); border-color: var(--green); background: color-mix(in srgb, var(--green) 7%, transparent); }
     .fb-btn.edit-btn { margin-left: auto; color: var(--ink-4); }
     .fb-btn.edit-btn:hover { color: var(--ink-1); border-color: var(--ink-2); }
-    .fb-btn.down.voted { color: var(--red); border-color: var(--red); background: #8b1e1e0f; }
+    .fb-btn.down.voted { color: var(--red); border-color: var(--red); background: color-mix(in srgb, var(--red) 7%, transparent); }
     .fb-label { font-family: var(--mono); font-size: 9px; color: var(--ink-5); }
 
     /* ── Stats ── */
@@ -252,11 +304,12 @@
       flex-shrink: 0; transition: opacity .15s;
     }
     .cookie-btn-accept:hover { opacity: 0.8; }
+    @media(max-width: 699px) { #cookie-banner { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); } }
 
     /* ── Modals ── */
     .modal-overlay {
       display: none; position: fixed; inset: 0; z-index: 10000;
-      background: rgba(26,23,20,0.55);
+      background: var(--overlay);
       padding: 20px; align-items: center; justify-content: center;
     }
     .modal-box {
@@ -444,27 +497,34 @@
     <div class="splash-rule splash-rule-bottom"></div>
   </div>
 </div>
+<script>
+  // Vis splash kun én gang per økt
+  try { if (sessionStorage.getItem("karo-splash")) document.getElementById("splash").remove(); else sessionStorage.setItem("karo-splash", "1"); } catch (e) {}
+</script>
 
 <div class="shell">
 
   <header id="masthead">
     <div class="masthead-top">
       <div class="masthead-logo">Karo · Markedsintelligens</div>
-      <div class="masthead-date" id="header-date"></div>
+      <div class="masthead-right">
+        <div class="masthead-date" id="header-date"></div>
+        <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Bytt lyst/mørkt tema" aria-label="Bytt lyst/mørkt tema">◐</button>
+      </div>
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
       <h1 class="masthead-title" id="page-title">Dagens <em>brief</em></h1>
-      <button class="add-btn" onclick="openAddModal()" title="Legg til artikkel">+</button>
+      <button class="add-btn" onclick="openAddModal()" title="Legg til artikkel" aria-label="Legg til artikkel">+</button>
     </div>
   </header>
 
   <div id="nav-strip">
     <div class="nav-inner">
-      <button class="nav-btn active" onclick="switchView('today',this)">Dagens brief</button>
+      <button class="nav-btn active" data-view="today" onclick="switchView('today')">Dagens brief</button>
       <div class="nav-sep"></div>
-      <button class="nav-btn" onclick="switchView('archive',this)">Arkiv &amp; søk</button>
+      <button class="nav-btn" data-view="archive" onclick="switchView('archive')">Arkiv &amp; søk</button>
       <div class="nav-sep"></div>
-      <button class="nav-btn" onclick="switchView('sources',this)">Kilder &amp; kalibrering</button>
+      <button class="nav-btn" data-view="sources" onclick="switchView('sources')">Kilder &amp; kalibrering</button>
     </div>
   </div>
 
@@ -478,14 +538,16 @@
 
   <div id="toolbar">
     <div class="search-wrap">
-      <span class="search-icon">⌕</span>
-      <input id="search-input" type="text" placeholder="Søk…" oninput="applyFilters()" />
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input id="search-input" type="search" placeholder="Søk i tittel, sammendrag og kilde…  ( / )" aria-label="Søk" oninput="applyFilters()" />
     </div>
     <div class="src-filters" id="source-filters"></div>
     <div class="date-filters" id="date-filters"></div>
   </div>
 
   <main id="main">
+    <div id="notice-container"></div>
+    <div id="digest-container"></div>
     <div class="section-header">
       <span class="section-label" id="section-label">Siste 24 timer</span>
       <span class="section-count" id="section-count"></span>
@@ -524,16 +586,16 @@
 
   <footer>
     <span class="footer-brand">Karo Healthcare Norway</span>
-    <span class="footer-note">Intern · Ikke for distribusjon</span>
+    <span class="footer-note"><span id="last-updated"></span>Intern · Ikke for distribusjon</span>
   </footer>
 
 </div>
 
 <!-- ── Edit article modal ── -->
 <div id="edit-modal" class="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true">
     <div class="modal-pull"></div>
-    <button class="modal-close" onclick="closeEditModal()">×</button>
+    <button class="modal-close" onclick="closeEditModal()" aria-label="Lukk">×</button>
     <div class="modal-header-label">Rediger artikkel</div>
     <div class="modal-header-title">Endre tittel,<br>kategori eller sammendrag</div>
 
@@ -608,9 +670,9 @@
 
 <!-- ── Add article modal ── -->
 <div id="add-modal" class="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true">
     <div class="modal-pull"></div>
-    <button class="modal-close" onclick="closeAddModal()">×</button>
+    <button class="modal-close" onclick="closeAddModal()" aria-label="Lukk">×</button>
     <div class="modal-header-label">Legg til artikkel</div>
     <div class="modal-header-title">Lim inn en URL og<br>vi gjør resten</div>
 
@@ -685,17 +747,26 @@
 </div>
 
 <!-- Mobile bottom nav -->
-<nav id="bottom-nav">
-  <button class="bn-btn active" onclick="switchView('today',this)" id="bn-today">
-    <span class="bn-icon">📰</span>Brief
+<nav id="bottom-nav" aria-label="Navigasjon">
+  <button class="bn-btn active" onclick="switchView('today')" id="bn-today">
+    <span class="bn-icon" aria-hidden="true">📰</span>Brief
   </button>
-  <button class="bn-btn" onclick="switchView('archive',this)" id="bn-archive">
-    <span class="bn-icon">🗂</span>Arkiv
+  <button class="bn-btn" onclick="switchView('archive')" id="bn-archive">
+    <span class="bn-icon" aria-hidden="true">🗂</span>Arkiv
   </button>
-  <button class="bn-btn" onclick="switchView('sources',this)" id="bn-sources">
-    <span class="bn-icon">⚙️</span>Kilder
+  <button class="bn-btn" onclick="switchView('sources')" id="bn-sources">
+    <span class="bn-icon" aria-hidden="true">⚙️</span>Kilder
   </button>
 </nav>
+
+<div id="cookie-banner" style="display:none">
+  <div style="flex:1;min-width:180px">
+    <span class="cookie-label">Informasjonskapsler</span>
+    <p>Vi bruker informasjonskapsler for å huske preferanser og forbedre opplevelsen på dette interne verktøyet.</p>
+  </div>
+  <button class="cookie-btn-accept" onclick="acceptCookies()">Godta</button>
+</div>
+
 
 <script>
 const SUPABASE_URL      = "https://wspcuvxvrcrhkkwlhopk.supabase.co";
@@ -720,6 +791,11 @@ const CATEGORIES = [
 const CAT_MAP = Object.fromEntries(CATEGORIES.map(c=>[c.id,c]));
 
 const KARO_BRANDS = ["Decubal","Locobase","Apobase","Flux","Ibux","Paracet"];
+// Speiler BRAND_KEYWORDS i main.py ("flux" alene er for generisk)
+const BRAND_KEYWORDS = {
+  Decubal:["decubal"], Locobase:["locobase"], Apobase:["apobase"],
+  Flux:["flux tannpleie","flux tann","flux munn"], Ibux:["ibux"], Paracet:["paracet"],
+};
 
 const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Farmatid","Dagligvarehandelen","Reuters","NYT","The Economist","Fierce Pharma","FHI","SSB","DMP","Helsedirektoratet"];
 
@@ -747,35 +823,63 @@ const RSS_FEEDS = {
   "Helsedirektoratet": ["https://www.helsedirektoratet.no/rss"],
 };
 
-const KEYWORDS = [
+// Speiler KEYWORDS i main.py – oppdater begge steder ved endring
+const KEYWORDS = [...new Set([
   "Decubal","Locobase","Apobase","Flux",
   "hudpleie","eksem","psoriasis","atopisk","barrierekrem","dermatologi","hudsykdom","fuktighetskrem","sårpleie","tørr hud","sensitiv hud","kløe","allergisk",
   "tannpleie","munnhygiene","tannkrem","munnvann","tannhelse","karies","fluor","tannlege",
   "apotek","Apotek 1","Vitusapotek","Boots","Apotekforeningen","apotekbransjen",
   "Rema 1000","NorgesGruppen","Coop","Kiwi","Meny","Spar","dagligvare","hylleplass","sortiment","dagligvarebransjen","supermarked","matpris","dagligvarekjede",
   "OTC","reseptfri","reseptfritt","egenpris",
-  "Beiersdorf","Eucerin","Nivea","Unilever","Vaseline","La Roche-Posay","Colgate","Oral-B","Sensodyne","CeraVe","Dove","Johnson & Johnson","Procter & Gamble","L'Oréal",
-  "oppkjøp","fusjon","private equity","KKR","Nordic Capital","EQT","Axel Johnson","Orkla","consumer health","konsumenthelse","investeringsfond","PE-fond",
-  "Legemiddelverket","Folkehelseinstituttet","FHI","reseptfrihet","markedsføringsloven","helsepolitikk","folkehelse","EU-regulering","emballasje","bærekraft",
-  "forbrukertrender","forbrukervaner","kjøpekraft","prisvekst","inflasjon","kronekurs","renteøkning",
-  "influencer","sosiale medier","digital markedsføring","merkevare","reklamebransjen",
-  "legemiddel","farmasi","helsesektor","helsekost","kosttilskudd",
-  "piller","pillebruk","pilleforbruk","medisinbruk","smertestillende","ibuprofen","paracetamol",
-  "legemiddelforbruk","selvmedisinering","egenbehandling","Paracet","Ibux","Asan","Paralgin",
+  "Beiersdorf","Eucerin","Nivea","Unilever","Vaseline","La Roche-Posay","Colgate","Oral-B","Sensodyne","CeraVe","Dove","Johnson & Johnson","Procter & Gamble","L'Oréal","Loreal",
+  "oppkjøp","fusjon","oppkjøpet","kjøper opp","private equity","KKR","Nordic Capital","EQT","Axel Johnson","Orkla","Schibsted","consumer health","konsumenthelse","investeringsfond","PE-fond",
+  "Legemiddelverket","Folkehelseinstituttet","FHI","reseptfrihet","markedsføringsloven","markedsføring av","Helse- og omsorgsdepartementet","helsepolitikk","helsestrategi","folkehelse","forebygging","EU-regulering","EFSA","emballasje","bærekraft","plastforbudet","grønn omstilling",
+  "forbrukertrender","forbrukervaner","kjøpekraft","prisvekst","inflasjon","kronekurs","renteøkning","handelsbalanse","import","eksport","bærekraftig forbruk","grønn forbruker",
+  "influencer","sosiale medier","digital markedsføring","reklameforbudet","merkevare","brand","TV-reklame","reklamebransjen",
+  "legemiddel","farmasi","helsesektor","bioteknologi","helsekost","naturmiddel","kosttilskudd","eldrebølge","kronisk sykdom",
+  "piller","pillebruk","pilleforbruk","medisinbruk","smertestillende","ibuprofen","paracetamol","reseptbelagt","legemiddelforbruk","selvmedisinering","egenbehandling","Paracet","Ibux","Asan","Paralgin",
   // English
   "skincare","skin care","eczema","atopic","moisturizer","dermatology",
   "oral care","toothpaste","mouthwash","dental",
-  "pharmacy","pharmacies","consumer health","over-the-counter",
-  "pharmaceutical","acquisition","merger","buyout",
-  "Beiersdorf","Colgate","Unilever","painkiller","pain relief",
+  "pharmacy","pharmacies","drugstore","over-the-counter",
+  "healthcare","pharma","pharmaceutical","acquisition","merger","buyout",
+  "L Oreal","Johnson Johnson","skincare market","beauty market","health market",
+  "painkiller","pain relief","acetaminophen","retail health","health retail","drug store",
+])];
+
+// ── Demo data (vises kun hvis databasen ikke svarer) ──────────────────────────
+const DEMO=[
+  {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie – Decubal blant vinnerne",source:"E24",category:"apotek",published_at:"2026-02-19T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Decubal trekkes frem som en av de sterkeste performerne.",url:"#",relevance_score:92},
+  {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-19T07:45:00Z",summary:"KKR vurderer strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg eller børsnotering i 2026–2027.",url:"#",relevance_score:97},
+  {id:"3",title:"Ny studie: Barrierekrem halverer eksemoppbluss hos barn",source:"NRK",category:"dermatologi",published_at:"2026-02-19T08:30:00Z",summary:"En norsk klinisk studie viser at daglig bruk av barrierekrem reduserer eksemoppbluss med 52% hos barn under 5 år.",url:"#",relevance_score:88},
+  {id:"4",title:"Rema 1000 kutter antall hudpleiebrands i 2026",source:"DN",category:"dagligvare",published_at:"2026-02-18T14:00:00Z",summary:"Begge store dagligvarekjeder signaliserer en konsolidering der kun topp-2 brands per underkategori beholder hylleplass.",url:"#",relevance_score:85},
+  {id:"5",title:"Beiersdorf øker markedsbudsjettet for Eucerin i Norden med 40%",source:"Aftenposten",category:"konkurrenter",published_at:"2026-02-18T10:15:00Z",summary:"Beiersdorf bekrefter kraftig økning i medietrykket for Eucerin i Skandinavia, med særlig fokus på apotek-kanalen.",url:"#",relevance_score:83},
+  {id:"6",title:"Pilleforbruket til himmels: – Uten hadde jeg ikke klart hverdagen",source:"Dagbladet",category:"helsepolitikk",published_at:"2026-02-18T09:00:00Z",summary:"Norske forbrukere bruker stadig mer reseptfrie smertestillende. Eksperter advarer om avhengighet, mens bransjen ser økt etterspørsel.",url:"#",relevance_score:78},
+  {id:"7",title:"Colgate melder svakere global vekst – Norden skiller seg ut",source:"E24",category:"oral-care",published_at:"2026-02-17T11:30:00Z",summary:"I kvartalsrapporten melder Colgate om flat volumvekst globalt, men Norden trekkes frem som unntak med positiv utvikling for premium tannpleie.",url:"#",relevance_score:76},
+  {id:"8",title:"PE-fond kjøper norsk apotekjede for 1,2 milliarder",source:"Finansavisen",category:"M&A",published_at:"2026-02-17T08:00:00Z",summary:"Et nordisk PE-fond har fullført kjøpet av en regional apotekjede med 45 utsalgssteder i Sør-Norge.",url:"#",relevance_score:91},
 ];
 
 // ── State ──────────────────���──────────────────────────────────────────────────
 let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all", activeBrand="all";
+let archiveOffset=0, archiveHasMore=false, briefFallback=false, usingDemo=false, loadToken=0, latestDigest=null;
+const ARCHIVE_PAGE=300;
 const feedback={};
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const VIEW_HASH={today:"brief",archive:"arkiv",sources:"kilder"};
+// Hvis Supabase-biblioteket ikke lastet (CDN nede/blokkert) faller appen tilbake til eksempeldata
+const sb=window.supabase?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+// All tekst fra RSS/database escapes før den settes inn i innerHTML
+const ESC_MAP={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
+function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>ESC_MAP[c]); }
+function safeUrl(u){
+  try{ const x=new URL(u,location.href); return /^https?:$/.test(x.protocol)?x.href:"#"; }catch(e){ return "#"; }
+}
+function cssUrl(u){ return esc(safeUrl(u).replace(/['"()\\\s]/g,c=>encodeURIComponent(c))); }
+function catLabel(id){ return (CAT_MAP[id]||{}).label||id||""; }
+function storeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function storeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
 function categoryImg(cat) {
   return (CAT_MAP[cat]||CAT_MAP["annet"]).img;
 }
@@ -784,7 +888,7 @@ function categoryImg(cat) {
 function mentionsBrands(text) {
   if(!text) return [];
   const lower = text.toLowerCase();
-  return KARO_BRANDS.filter(b=>lower.includes(b.toLowerCase()));
+  return KARO_BRANDS.filter(b=>BRAND_KEYWORDS[b].some(k=>lower.includes(k)));
 }
 
 // Returner merkevarer for en artikkel.
@@ -825,8 +929,9 @@ function toDatetimeLocal(iso){
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function feedbackHtml(id, isManual){
-  const v=feedback[id];
+function feedbackHtml(rawId){
+  const id=esc(rawId);
+  const v=feedback[rawId];
   return `<div class="ar-feedback">
     <button class="fb-btn up${v==='up'?' voted':''}" id="up-${id}" onclick="handleVote('${id}','up',this)">↑ Relevant</button>
     <button class="fb-btn down${v==='down'?' voted':''}" id="dn-${id}" onclick="handleVote('${id}','down',this)">↓ Ikke relevant</button>
@@ -856,22 +961,123 @@ function handleVote(id,v,btn){
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-async function loadArticles(){
-  document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
+async function loadArticles(append=false){
+  const token=++loadToken;
+  if(!append){
+    archiveOffset=0;
+    document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
+  }
+  const base=()=>sb.from("articles").select("*").order("published_at",{ascending:false,nullsFirst:false});
   try{
-    let q=sb.from("articles").select("*").order("published_at",{ascending:false});
-    if(activeView==="today") q=q.gte("published_at",new Date(Date.now()-26*3600000).toISOString());
-    else q=q.limit(300);
-    const{data,error}=await q; if(error) throw error;
-    allArticles=data||[];
-  }catch(e){ console.warn("Demo:",e.message); allArticles=DEMO; }
+    let data;
+    if(activeView==="today"){
+      briefFallback=false;
+      const r=await base().gte("published_at",new Date(Date.now()-26*3600000).toISOString());
+      if(r.error) throw r.error;
+      data=r.data||[];
+      // Ingen nye saker (f.eks. i helgen) – vis de siste sakene i stedet for en tom side
+      if(!data.length){
+        const r2=await base().limit(15);
+        if(r2.error) throw r2.error;
+        data=r2.data||[]; briefFallback=data.length>0;
+      }
+    } else {
+      const r=await base().range(archiveOffset,archiveOffset+ARCHIVE_PAGE-1);
+      if(r.error) throw r.error;
+      data=r.data||[];
+      archiveHasMore=data.length===ARCHIVE_PAGE;
+      archiveOffset+=data.length;
+    }
+    if(token!==loadToken) return;  // en nyere forespørsel har tatt over
+    allArticles=append?[...allArticles,...data.filter(a=>!allArticles.some(b=>b.id===a.id))]:data;
+    usingDemo=false;
+  }catch(e){
+    if(token!==loadToken) return;
+    console.warn("Demo:",e.message);
+    allArticles=DEMO; usingDemo=true; archiveHasMore=false;
+  }
+  renderNotice();
   applyFilters();
 }
 
+function loadMore(btn){
+  if(btn){ btn.disabled=true; btn.textContent="Laster…"; }
+  loadArticles(true);
+}
+
+function renderNotice(){
+  document.getElementById("notice-container").innerHTML=usingDemo
+    ?'<div class="notice">⚠ Fikk ikke kontakt med databasen – viser eksempeldata.</div>':"";
+}
+
+async function loadLastUpdated(){
+  try{
+    const{data,error}=await sb.from("articles").select("created_at").order("created_at",{ascending:false}).limit(1);
+    if(error||!data?.[0]) return;
+    document.getElementById("last-updated").textContent=`Sist oppdatert ${formatTime(data[0].created_at)} · `;
+  }catch(e){}
+}
+
+// ── Weekly digest ─────────────────────────────────────────────────────────────
+async function loadDigest(){
+  try{
+    const{data,error}=await sb.from("weekly_summaries").select("*").order("created_at",{ascending:false}).limit(1);
+    if(error) throw error;
+    const d=data?.[0];
+    // Vis kun digest fra siste 7 dager
+    if(d&&Date.now()-new Date(d.created_at).getTime()<7*86400000) latestDigest=d;
+  }catch(e){ console.warn("Digest:",e.message); }
+  renderDigest();
+}
+
+function renderDigest(){
+  const el=document.getElementById("digest-container");
+  const d=latestDigest;
+  if(!d||activeView!=="today"||storeGet("karo-digest-dismissed")===String(d.id)){ el.innerHTML=""; return; }
+  const week=d.week_start?new Date(d.week_start+"T12:00:00"):new Date(d.created_at);
+  const label=`Ukesdigest · uke ${isoWeek(week)}${d.article_count?` · ${d.article_count} saker`:""}`;
+  el.innerHTML=`<section class="digest collapsed fade-in" id="digest" aria-label="Ukesdigest">
+    <button class="digest-close" onclick="dismissDigest('${esc(d.id)}')" aria-label="Skjul ukesdigest" title="Skjul">×</button>
+    <div class="digest-label">${esc(label)}</div>
+    <h2 class="digest-title">${esc(d.title)}</h2>
+    <p class="digest-body">${esc(d.summary)}</p>
+    <button class="digest-toggle" onclick="toggleDigest(this)" aria-expanded="false">Les hele ↓</button>
+  </section>`;
+}
+function toggleDigest(btn){
+  const box=document.getElementById("digest");
+  const open=box.classList.toggle("collapsed")===false;
+  btn.textContent=open?"Vis mindre ↑":"Les hele ↓";
+  btn.setAttribute("aria-expanded",String(open));
+}
+function dismissDigest(id){ storeSet("karo-digest-dismissed",String(id)); renderDigest(); }
+function isoWeek(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day);
+  const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil(((t-y)/86400000+1)/7);
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const root=document.documentElement;
+  const isDark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme=isDark?"light":"dark";
+  storeSet("karo-theme",root.dataset.theme);
+}
+
+const feedbackCats={};  // article_id -> kategori, for kalibreringstabellen
 async function loadFeedback(){
   try{
     const{data}=await sb.from("feedback").select("*");
     (data||[]).forEach(f=>{feedback[f.article_id]=f.vote;});
+    renderCalibration();
+    // Hent kategori for vurderte artikler som ikke er lastet i gjeldende visning
+    const ids=Object.keys(feedback);
+    for(let i=0;i<ids.length;i+=100){
+      const{data:arts}=await sb.from("articles").select("id,category").in("id",ids.slice(i,i+100));
+      (arts||[]).forEach(a=>{feedbackCats[a.id]=a.category;});
+    }
     renderCalibration();
   }catch(e){}
 }
@@ -900,7 +1106,8 @@ function applyFilters(){
   renderCatBar(allArticles);
   renderBrandBar(allArticles);
   renderArticles(f);
-  document.getElementById("section-count").textContent=`${f.length} saker`;
+  document.getElementById("section-count").textContent=`${f.length} ${f.length===1?"sak":"saker"}`;
+  if(activeView==="today") document.getElementById("section-label").textContent=briefFallback?"Siste saker":"Siste 24 timer";
 }
 
 // ── Render brand filter bar ───────────────────────────────────────────────────
@@ -910,7 +1117,7 @@ function renderBrandBar(arts){
   arts.forEach(a=>{
     getBrands(a).forEach(b=>{ counts[b]=(counts[b]||0)+1; });
   });
-  const hasBrands=Object.keys(counts).length>0;
+  const hasBrands=Object.keys(counts).length>0||activeBrand!=="all";
   const strip=document.getElementById("brand-strip");
   strip.style.display=hasBrands?"":"none";
   if(!hasBrands) return;
@@ -919,9 +1126,9 @@ function renderBrandBar(arts){
   let html=`<span class="brand-filter-label">Merkevare</span>`;
   html+=`<button class="brand-btn${allActive?" active":""}" onclick="setBrand('all')">Alle</button>`;
   KARO_BRANDS.forEach(b=>{
-    if(!counts[b]) return;
     const a=activeBrand===b;
-    html+=`<button class="brand-btn${a?" active":""}" onclick="setBrand('${b}')">${b} <span style="opacity:0.5;font-size:9px">${counts[b]}</span></button>`;
+    if(!counts[b]&&!a) return;
+    html+=`<button class="brand-btn${a?" active":""}" onclick="setBrand('${b}')">${b} <span style="opacity:0.5;font-size:9px">${counts[b]||0}</span></button>`;
   });
   document.getElementById("brand-buttons").innerHTML=html;
 }
@@ -931,22 +1138,39 @@ function renderCatBar(arts){
   const c={};arts.forEach(a=>{c[a.category]=(c[a.category]||0)+1;});
   document.getElementById("cat-buttons").innerHTML=CATEGORIES.map(cat=>{
     const n=cat.id==="all"?arts.length:(c[cat.id]||0);
-    if(!n&&cat.id!=="all") return "";
     const a=activeCategory===cat.id;
+    if(!n&&cat.id!=="all"&&!a) return "";
     return `<button class="cat-btn${a?" active":""}" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
   }).join("");
 }
 
 // ── Render articles ───────────────────────────────────────────────────────────
+function filtersActive(){
+  return activeCategory!=="all"||activeBrand!=="all"||activeSource!=="Alle"||activeDateRange!=="all"||!!document.getElementById("search-input").value;
+}
+function resetFilters(){
+  activeCategory="all"; activeBrand="all"; activeSource="Alle"; activeDateRange="all";
+  document.getElementById("search-input").value="";
+  document.querySelectorAll(".src-btn").forEach((b,i)=>b.classList.toggle("active",i===0));
+  document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));
+  applyFilters();
+}
+
 function renderArticles(arts){
   const el=document.getElementById("articles-container");
   const sr=document.getElementById("stats-row");
-  if(!arts.length){el.innerHTML='<div class="empty">Ingen saker funnet</div>';sr.classList.remove("visible");return;}
+  if(!arts.length){
+    const msg=activeView==="today"&&!filtersActive()?"Ingen nye saker ennå i dag":"Ingen saker funnet";
+    el.innerHTML=`<div class="empty">${msg}${filtersActive()?'<br><button class="empty-reset" onclick="resetFilters()">Nullstill filtre</button>':""}</div>`;
+    sr.classList.remove("visible");
+    return;
+  }
 
   if(activeView==="archive"){
     const srcs=new Set(arts.map(a=>a.source)).size;
     const avg=Math.round(arts.reduce((s,a)=>s+(a.relevance_score||0),0)/arts.length);
-    sr.innerHTML=`<div class="stat"><span class="stat-n">${arts.length}</span><span class="stat-l">Artikler</span></div><div class="stat"><span class="stat-n">${srcs}</span><span class="stat-l">Kilder</span></div><div class="stat"><span class="stat-n">${avg}</span><span class="stat-l">Snitt-score</span></div>`;
+    const brandHits=arts.filter(a=>getBrands(a).length).length;
+    sr.innerHTML=`<div class="stat"><span class="stat-n">${arts.length}</span><span class="stat-l">Artikler</span></div><div class="stat"><span class="stat-n">${srcs}</span><span class="stat-l">Kilder</span></div><div class="stat"><span class="stat-n">${avg}</span><span class="stat-l">Snitt-score</span></div><div class="stat"><span class="stat-n">${brandHits}</span><span class="stat-l">Nevner Karo</span></div>`;
     sr.classList.add("visible");
   } else sr.classList.remove("visible");
 
@@ -958,20 +1182,20 @@ function renderArticles(arts){
     const f=arts[0];
     const img=f.image_url||categoryImg(f.category);
     const brands=getBrands(f);
-    html+=`<div class="article-featured">
-      <div class="af-hero" style="background-image:url('${img}')">
-        <span class="af-hero-cat">${f.category||""}</span>
+    html+=`<article class="article-featured">
+      <div class="af-hero" style="background-image:url('${cssUrl(img)}')">
+        <span class="af-hero-cat">${esc(catLabel(f.category))}</span>
       </div>
       <div class="af-meta">
-        <span class="m-src">${f.source||""}</span>
+        <span class="m-src">${esc(f.source)}</span>
         <span class="m-dot"></span>
         <span class="m-time">${formatTime(f.published_at||f.created_at)}</span>
-        ${brands.map(b=>`<span class="af-brand-badge">★ ${b}</span>`).join("")}
+        ${brands.map(b=>`<span class="af-brand-badge">★ ${esc(b)}</span>`).join("")}
       </div>
-      <a href="${f.url||'#'}" target="_blank" class="af-title">${f.title||""}</a>
-      <div class="af-summary">${f.summary||""}</div>
+      <a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener noreferrer" class="af-title">${esc(f.title)}</a>
+      <div class="af-summary">${esc(f.summary)}</div>
       ${feedbackHtml(f.id)}
-    </div>`;
+    </article>`;
   }
 
   html+=`<div class="articles-list">`;
@@ -980,28 +1204,30 @@ function renderArticles(arts){
     const brands=getBrands(a);
     const dateIso=a.published_at||a.created_at;
     const timeStr=activeView==="archive"?formatDateFull(dateIso):formatTime(dateIso);
-    html+=`<div class="article-row fade-in" style="animation-delay:${i*18}ms">
+    html+=`<article class="article-row fade-in" style="animation-delay:${Math.min(i,30)*18}ms">
       <span class="ar-idx">${String(i+start+1).padStart(2,"0")}</span>
-      <div class="ar-img" style="background-image:url('${img}')"></div>
+      <div class="ar-img" style="background-image:url('${cssUrl(img)}')"></div>
       <div class="ar-body">
         <div class="ar-meta">
-          <span class="m-cat">${a.category||""}</span>
+          <span class="m-cat">${esc(catLabel(a.category))}</span>
           <span class="m-dot"></span>
-          <span class="m-src">${a.source||""}</span>
+          <span class="m-src">${esc(a.source)}</span>
           <span class="m-dot"></span>
           <span class="m-time">${timeStr}</span>
-          ${brands.map(b=>`<span class="m-brand">★ ${b}</span>`).join("")}
-          <span class="m-score">▲${a.relevance_score||""}</span>
+          ${brands.map(b=>`<span class="m-brand">★ ${esc(b)}</span>`).join("")}
+          ${a.relevance_score?`<span class="m-score" title="Relevans-score">▲${esc(a.relevance_score)}</span>`:""}
         </div>
-        <a href="${a.url||'#'}" target="_blank" class="ar-title-link"><div class="ar-title">${a.title||""}</div></a>
-        <div class="ar-summary">${a.summary||""}</div>
+        <a href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer" class="ar-title-link"><h3 class="ar-title">${esc(a.title)}</h3></a>
+        <div class="ar-summary">${esc(a.summary)}</div>
         ${feedbackHtml(a.id)}
       </div>
-    </div>`;
+    </article>`;
   });
   html+=`</div>`;
+  if(activeView==="archive"&&archiveHasMore){
+    html+=`<div class="more-wrap"><button class="empty-reset" onclick="loadMore(this)">Last inn eldre saker</button></div>`;
+  }
   el.innerHTML=html;
-
 }
 
 // ── Calibration ───────────────────────────────────────────────────────────────
@@ -1016,42 +1242,41 @@ function renderCalibration(){
   document.getElementById("cs-down").textContent=down||"–";
   document.getElementById("cs-pct").textContent=total>0?`${pct}%`:"–";
   const cats={};
-  allArticles.forEach(a=>{const v=feedback[a.id];if(!v)return;if(!cats[a.category])cats[a.category]={up:0,down:0};cats[a.category][v]++;});
+  allArticles.forEach(a=>{feedbackCats[a.id]=a.category;});
+  Object.entries(feedback).forEach(([id,v])=>{
+    if(!(id in feedbackCats)) return;
+    const c=feedbackCats[id]||"annet";
+    if(!cats[c])cats[c]={up:0,down:0};
+    cats[c][v]++;
+  });
   const tbody=document.getElementById("cal-tbody");
   if(!Object.keys(cats).length){tbody.innerHTML='<tr><td colspan="4" style="color:var(--ink-4);font-family:var(--mono);font-size:10px;padding:12px 0">Ingen tilbakemeldinger ennå – bruk ↑/↓ på artiklene</td></tr>';return;}
   tbody.innerHTML=Object.entries(cats).sort((a,b)=>(b[1].up+b[1].down)-(a[1].up+a[1].down)).map(([cat,v])=>{
     const t=v.up+v.down,p=Math.round(v.up/t*100);
-    return `<tr><td>${cat}</td><td>${v.up}</td><td>${v.down}</td><td><div class="bar-wrap"><div class="bar" style="width:${p}px"></div><span class="bar-val">${p}%</span></div></td></tr>`;
+    return `<tr><td>${esc(catLabel(cat))}</td><td>${v.up}</td><td>${v.down}</td><td><div class="bar-wrap"><div class="bar" style="width:${p}px"></div><span class="bar-val">${p}%</span></div></td></tr>`;
   }).join("");
 }
 
 // ── Sources page ──────────────────────────────────────────────────────────────
 function renderSourcesPage(){
   document.getElementById("sources-grid").innerHTML=Object.entries(RSS_FEEDS).map(([name,urls])=>
-    urls.map(url=>`<div class="source-card"><div class="source-name">${name}</div><div class="source-url">${url}</div></div>`).join("")
+    urls.map(url=>`<div class="source-card"><div class="source-name">${esc(name)}</div><div class="source-url">${esc(url)}</div></div>`).join("")
   ).join("");
-  document.getElementById("keywords-grid").innerHTML=KEYWORDS.map(k=>`<span class="kw-tag">${k}</span>`).join("");
+  document.getElementById("keywords-grid").innerHTML=KEYWORDS.map(k=>`<span class="kw-tag">${esc(k)}</span>`).join("");
   document.getElementById("kw-title").textContent=`Nøkkelord-filter · ${KEYWORDS.length} ord`;
   renderCalibration();
 }
 
 // ── View switching ────────────────────────────────────────────────────────────
-function switchView(v,btn){
+function switchView(v){
+  if(!VIEW_HASH[v]) v="today";
   activeView=v;
+  if(location.hash!=="#"+VIEW_HASH[v]) history.replaceState(null,"","#"+VIEW_HASH[v]);
 
-  // Desktop nav - sync all
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach(b=>{
-    if((v=="today"&&b.textContent.includes("brief"))||
-       (v=="archive"&&b.textContent.includes("Arkiv"))||
-       (v=="sources"&&b.textContent.includes("Kilder"))) b.classList.add("active");
-  });
-
-  // Mobile nav - sync all
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
   ["today","archive","sources"].forEach(id=>{
-    document.getElementById(`bn-${id}`)?.classList.remove("active");
+    document.getElementById(`bn-${id}`)?.classList.toggle("active",id===v);
   });
-  document.getElementById(`bn-${v}`)?.classList.add("active");
 
   const mainEl=document.getElementById("main");
   const sourcesEl=document.getElementById("sources-page");
@@ -1064,6 +1289,7 @@ function switchView(v,btn){
     mainEl.style.display="none"; sourcesEl.classList.add("visible");
     catStrip.style.display="none"; brandStrip.style.display="none"; toolbar.classList.remove("visible");
     title.innerHTML="Kilder <em>&amp; kalibrering</em>";
+    document.title="Kilder & kalibrering · Karo Intelligence";
     renderSourcesPage();
   } else {
     mainEl.style.display=""; sourcesEl.classList.remove("visible");
@@ -1072,10 +1298,18 @@ function switchView(v,btn){
     toolbar.classList.toggle("visible",v==="archive");
     if(v!=="archive"){activeDateRange="all";document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));}
     title.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
+    document.title=(v==="today"?"Dagens brief":"Arkiv & søk")+" · Karo Intelligence";
     document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
+    renderDigest();
     loadArticles();
   }
 }
+
+function viewFromHash(){
+  const h=location.hash.replace("#","");
+  return Object.keys(VIEW_HASH).find(k=>VIEW_HASH[k]===h)||"today";
+}
+window.addEventListener("hashchange",()=>{ const v=viewFromHash(); if(v!==activeView) switchView(v); });
 
 function setCat(cat){activeCategory=cat;applyFilters();}
 function setBrand(brand){activeBrand=brand;applyFilters();}
@@ -1091,8 +1325,25 @@ document.getElementById("date-filters").innerHTML=
   .map(r=>`<button class="date-btn${r.id==="all"?" active":""}" onclick="setDateRange('${r.id}',this)">${r.label}</button>`)
   .join("");
 document.getElementById("header-date").textContent=new Date().toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"});
-loadArticles();
+switchView(viewFromHash());
 loadFeedback();
+loadDigest();
+loadLastUpdated();
+
+// ── Tastatursnarveier ─────────────────────────────────────────────────────────
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    if(document.getElementById("edit-modal").style.display==="flex") closeEditModal();
+    if(document.getElementById("add-modal").style.display==="flex") closeAddModal();
+    return;
+  }
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(e.key==="/"&&!["input","textarea","select"].includes(tag)&&!e.metaKey&&!e.ctrlKey){
+    e.preventDefault();
+    if(activeView!=="archive") switchView("archive");
+    document.getElementById("search-input").focus();
+  }
+});
 
 // ── Edit article modal ───────────────────────────────────────────────────────
 function openEditModal(id){
@@ -1124,6 +1375,7 @@ function openEditModal(id){
 
 function closeEditModal(){
   document.getElementById("edit-modal").style.display = "none";
+  const btn = document.getElementById("edit-submit-btn"); btn.disabled = false; btn.style.opacity = "1";
   document.body.style.overflow = "";
 }
 
@@ -1143,6 +1395,7 @@ async function saveEdit(){
   const btn          = document.getElementById("edit-submit-btn");
 
   if(!title){ statusEl.textContent = "⚠ Tittel kan ikke være tom."; return; }
+  if(score && (score < 1 || score > 100)){ statusEl.textContent = "⚠ Relevans-score må være mellom 1 og 100."; return; }
 
   btn.disabled = true; btn.style.opacity = "0.5";
   statusEl.textContent = "Lagrer…";
@@ -1208,6 +1461,8 @@ function openAddModal(){
 
 function closeAddModal(){
   document.getElementById("add-modal").style.display="none";
+  const btn=document.getElementById("add-submit-btn"); btn.disabled=false; btn.style.opacity="1";
+  document.getElementById("add-status").style.color="";
   document.body.style.overflow="";
   resetAddForm();
   // clear fields
@@ -1262,6 +1517,7 @@ async function submitArticle(){
   const btn      = document.getElementById("add-submit-btn");
 
   if(!url){ statusEl.textContent="⚠ Lim inn en URL først."; return; }
+  if(safeUrl(url)==="#"){ statusEl.textContent="⚠ URL må starte med http:// eller https://"; return; }
   if(!title){ statusEl.textContent="⚠ Tittel er påkrevd."; return; }
 
   btn.disabled=true; btn.style.opacity="0.5";
@@ -1321,32 +1577,14 @@ function acceptCookies(){
   setTimeout(()=>{ el.style.display="none"; }, 300);
 }
 
-// ── Demo data ─────────────────────────────────────────────────────────────────
 // ── Splash ────────────────────────────────────────────────────────────────────
 (function(){
   var sp = document.getElementById("splash");
   if(sp) setTimeout(function(){ sp.remove(); }, 3000);
 })();
 
-const DEMO=[
-  {id:"1",title:"Apotek 1 øker hylleplassen for OTC-hudpleie – Decubal blant vinnerne",source:"E24",category:"apotek",published_at:"2026-02-19T06:12:00Z",summary:"Apotek 1 melder om rekordsalg i hudpleiekategorien og planlegger å utvide hylleplassen for OTC-produkter fra Q2. Decubal trekkes frem som en av de sterkeste performerne.",url:"#",relevance_score:92},
-  {id:"2",title:"KKR vurderer salg av europeisk konsumenthelseportefølje",source:"Finansavisen",category:"M&A",published_at:"2026-02-19T07:45:00Z",summary:"KKR vurderer strategiske alternativer for deler av sin europeiske consumer health-portefølje, med mulig salg eller børsnotering i 2026–2027.",url:"#",relevance_score:97},
-  {id:"3",title:"Ny studie: Barrierekrem halverer eksemoppbluss hos barn",source:"NRK",category:"dermatologi",published_at:"2026-02-19T08:30:00Z",summary:"En norsk klinisk studie viser at daglig bruk av barrierekrem reduserer eksemoppbluss med 52% hos barn under 5 år.",url:"#",relevance_score:88},
-  {id:"4",title:"Rema 1000 kutter antall hudpleiebrands i 2026",source:"DN",category:"dagligvare",published_at:"2026-02-18T14:00:00Z",summary:"Begge store dagligvarekjeder signaliserer en konsolidering der kun topp-2 brands per underkategori beholder hylleplass.",url:"#",relevance_score:85},
-  {id:"5",title:"Beiersdorf øker markedsbudsjettet for Eucerin i Norden med 40%",source:"Aftenposten",category:"konkurrenter",published_at:"2026-02-18T10:15:00Z",summary:"Beiersdorf bekrefter kraftig økning i medietrykket for Eucerin i Skandinavia, med særlig fokus på apotek-kanalen.",url:"#",relevance_score:83},
-  {id:"6",title:"Pilleforbruket til himmels: – Uten hadde jeg ikke klart hverdagen",source:"Dagbladet",category:"helsepolitikk",published_at:"2026-02-18T09:00:00Z",summary:"Norske forbrukere bruker stadig mer reseptfrie smertestillende. Eksperter advarer om avhengighet, mens bransjen ser økt etterspørsel.",url:"#",relevance_score:78},
-  {id:"7",title:"Colgate melder svakere global vekst – Norden skiller seg ut",source:"E24",category:"oral-care",published_at:"2026-02-17T11:30:00Z",summary:"I kvartalsrapporten melder Colgate om flat volumvekst globalt, men Norden trekkes frem som unntak med positiv utvikling for premium tannpleie.",url:"#",relevance_score:76},
-  {id:"8",title:"PE-fond kjøper norsk apotekjede for 1,2 milliarder",source:"Finansavisen",category:"M&A",published_at:"2026-02-17T08:00:00Z",summary:"Et nordisk PE-fond har fullført kjøpet av en regional apotekjede med 45 utsalgssteder i Sør-Norge.",url:"#",relevance_score:91},
-];
 </script>
 
-<div id="cookie-banner" style="display:none">
-  <div style="flex:1;min-width:180px">
-    <span class="cookie-label">Informasjonskapsler</span>
-    <p>Vi bruker informasjonskapsler for å huske preferanser og forbedre opplevelsen på dette interne verktøyet.</p>
-  </div>
-  <button class="cookie-btn-accept" onclick="acceptCookies()">Godta</button>
-</div>
 
 </body>
 </html>
