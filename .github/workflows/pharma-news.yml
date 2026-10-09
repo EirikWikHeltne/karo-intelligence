@@ -21,10 +21,6 @@ jobs:
   run-agent:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      # Job-level env so the weekly-digest step's `if:` can see it.
-      # Step-level env is not evaluated before the step's own `if:` expression.
-      HAS_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
 
     steps:
       - name: Checkout kode
@@ -39,17 +35,15 @@ jobs:
       - name: Installer avhengigheter
         run: pip install -r requirements.txt
 
-      - name: Kjør daglig nyhetsagent
+      - name: Kjør daglig nyhetsagent (nøkkelord, ingen AI)
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
         run: python main.py
 
-      - name: Kjør ukesdigest (kun fredag eller manuelt, krever API-nøkkel)
-        if: (github.event.schedule == '0 7 * * 5' || github.event.inputs.run_digest == 'true') && env.HAS_API_KEY == 'true'
+      - name: Kjør ukesdigest (kun fredag eller manuelt)
+        if: github.event.schedule == '0 7 * * 5' || github.event.inputs.run_digest == 'true'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
         run: python weekly_digest.py

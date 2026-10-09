@@ -1,70 +1,55 @@
 """
 Weekly Digest – Karo Healthcare
-Kjører hver fredag, henter ukens artikler fra Supabase,
-genererer en AI-oppsummering med Claude, og lagrer i weekly_summaries-tabellen.
+Kjører hver fredag, henter ukens artikler fra Supabase og lager en kort
+nøkkelord-basert oppsummering (ingen AI/API-kostnad) i weekly_summaries-tabellen.
 """
 
 import os
-import json
-import anthropic
+from collections import Counter
 from supabase import create_client
 from datetime import datetime, timezone, timedelta
+
+MIN_SCORE = 60  # samme terskel som appen bruker for "sterke treff"
+
+CAT_LABELS = {
+    "M&A": "M&A", "apotek": "apotek/reseptfritt", "dagligvare": "dagligvare",
+    "dermatologi": "hudpleie", "oral-care": "tannhelse", "konkurrenter": "konkurrenter",
+    "regulatorisk": "regulatorisk", "forbrukertrender": "forbrukertrender",
+    "helsepolitikk": "helsepolitikk", "markedsføring": "markedsføring", "økonomi": "økonomi",
+    "annet": "annet",
+}
 
 
 def fetch_week_articles(sb) -> list[dict]:
     since = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
-    result = sb.table("articles").select("*") \
+    result = sb.table("articles").select("title,source,category,brand,relevance_score") \
         .gte("published_at", since) \
+        .gte("relevance_score", MIN_SCORE) \
         .order("relevance_score", desc=True) \
-        .limit(60) \
+        .limit(200) \
         .execute()
     return result.data or []
 
 
-def generate_digest(articles: list[dict]) -> dict:
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+def _join(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " og " + items[-1]
 
-    # Bygg artikkel-liste for Claude – inkluder sammendrag for bedre kontekst
-    art_list = "\n\n".join([
-        f"[{(a.get('category') or 'annet').upper()}] {a.get('title', '')} ({a.get('source', 'ukjent')}, score: {a.get('relevance_score', 0)})\n{(a.get('summary') or '').strip()[:300]}"
-        for a in articles[:30]
-    ])
 
-    prompt = f"""Du er en strategisk markedsanalytiker for Karo Healthcare Norway – et pharma-selskap som selger Decubal, Locobase, Apobase og Flux gjennom apotek og dagligvare i Norge.
+def build_digest(articles: list[dict]) -> dict:
+    cats = Counter(a.get("category") or "annet" for a in articles)
+    top_cats = [CAT_LABELS.get(c, c) for c, _ in cats.most_common(2)]
+    brands = Counter(b.strip() for a in articles for b in (a.get("brand") or "").split(",") if b.strip())
 
-Her er denne ukens mest relevante nyheter med sammendrag (sortert etter relevans):
-
-{art_list}
-
-Skriv en flytende og sammenhengende ukesoppsummering på norsk. Krav:
-1. En kort, konkret tittel (maks 8 ord) som fanger ukens overordnede tema
-2. Et sammenhengende avsnitt på 130–180 ord som:
-   - Bygger en rød tråd mellom de 2–3 viktigste trendene fra uken
-   - Bruker konkret informasjon fra artiklene (selskaper, tall, hendelser)
-   - Viser tydelig hvorfor trendene er relevante for Karo (hudpleie, oral care, apotek, dagligvare)
-   - Avslutter med ett konkret spørsmål Karo bør stille seg
-
-Unngå kulepunkter, løse referanser og generelle påstander. Skriv som ett sammenhengende, analytisk avsnitt.
-
-Svar KUN med gyldig JSON i dette formatet (ingen markdown, ingen forklaring):
-{{"title": "...", "summary": "..."}}"""
-
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=800,
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    text = response.content[0].text.strip()
-
-    # Extract JSON object – robust mot markdown-fencing og omkringliggende tekst.
-    start = text.find("{")
-    end   = text.rfind("}") + 1
-    if start == -1 or end <= start:
-        raise ValueError(f"Ingen JSON funnet i Claude-svar: {text[:200]}")
-    text = text[start:end]
-
-    return json.loads(text)
+    title = f"Mest om {_join(top_cats)}"
+    parts = [f"{len(articles)} relevante saker denne uken."]
+    top = articles[:3]
+    if top:
+        parts.append("Viktigst: " + _join([f"«{a['title']}» ({a.get('source', '')})" for a in top]) + ".")
+    if brands:
+        parts.append("Karo-merker nevnt: " + _join([f"{b} ({n})" for b, n in brands.most_common()]) + ".")
+    spread = [f"{CAT_LABELS.get(c, c)} {n}" for c, n in cats.most_common(5)]
+    parts.append("Fordeling: " + ", ".join(spread) + ".")
+    return {"title": title, "summary": " ".join(parts)}
 
 
 def save_digest(sb, digest: dict, article_count: int):
@@ -84,15 +69,15 @@ def save_digest(sb, digest: dict, article_count: int):
 def main():
     print(f"[START] Weekly digest {datetime.now().isoformat()}")
 
-    sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
+    url = os.environ["SUPABASE_URL"].strip().rstrip("/")
+    sb = create_client(url, os.environ["SUPABASE_KEY"].strip())
 
     articles = fetch_week_articles(sb)
     if len(articles) < 3:
-        print(f"[INFO] Bare {len(articles)} artikler denne uken – hopper over digest.")
+        print(f"[INFO] Bare {len(articles)} relevante artikler denne uken – hopper over digest.")
         return
 
-    print(f"[INFO] {len(articles)} artikler funnet – genererer digest...")
-    digest = generate_digest(articles)
+    digest = build_digest(articles)
     save_digest(sb, digest, len(articles))
 
     print(f"[DONE] {datetime.now().isoformat()}")

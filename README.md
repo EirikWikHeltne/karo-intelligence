@@ -1,6 +1,6 @@
 # Karo Intelligence · Markedsintelligens
 
-Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra norske og internasjonale kilder, klassifiserer dem med Claude AI, og presenterer dem i en intern webapp.
+Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra norske og internasjonale kilder, scorer Karo-relevans med nøkkelord (ingen AI, ingen API-kostnad), og presenterer dem i en intern webapp.
 
 **Live:** [karo-intelligence.vercel.app](https://karo-intelligence.vercel.app)
 
@@ -9,11 +9,12 @@ Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra n
 ## Hvordan det fungerer
 
 ```
-RSS-feeds (21 kilder)
+RSS-feeds + målrettede Google News-søk (Karo-merker, apotek, konkurrenter)
        ↓
-Nøkkelord-filter (~110 ord)
+Relevans-filter: minst ett kjerne-ord, eller to kontekst-ord (hele ord, ikke delstrenger)
        ↓
-Claude klassifiserer relevans + kategori + sammendrag
+Nøkkelord-score 0–95: Karo-merke 95 · kjerne-ord 60–90 · kun kontekst-ord 35–55
+(score ≥ 60 vises som standard, 40–59 vises som «svake treff»)
        ↓
 Supabase (database)
        ↓
@@ -22,7 +23,7 @@ Vercel (webapp)
 
 **Daglig** (man–fre kl. 07:00 og 13:00): GitHub Actions kjører `main.py` → nye artikler lagres i databasen → vises i appen umiddelbart.
 
-**Ukentlig** (fre kl. 08:00): `weekly_digest.py` genererer en AI-oppsummering av ukens viktigste saker → vises som banner øverst i appen.
+**Ukentlig** (fre kl. 08:00): `weekly_digest.py` lager en nøkkelord-basert oppsummering av ukens viktigste saker → vises som banner øverst i appen.
 
 ---
 
@@ -30,7 +31,7 @@ Vercel (webapp)
 
 ```
 ├── main.py                      # Daglig nyhetsagent
-├── weekly_digest.py             # Fredag-digest (AI-oppsummering)
+├── weekly_digest.py             # Fredag-digest (topp-saker og fordeling)
 ├── requirements.txt             # Python-avhengigheter
 ├── supabase_setup.sql           # Database-tabell: articles
 ├── weekly_summaries_table.sql   # Database-tabell: weekly_summaries
@@ -67,7 +68,6 @@ Legg inn følgende under **Settings → Secrets → Actions** i GitHub-repoet:
 
 | Secret | Verdi |
 |--------|-------|
-| `ANTHROPIC_API_KEY` | API-nøkkel fra [console.anthropic.com](https://console.anthropic.com) |
 | `SUPABASE_URL` | Project URL fra Supabase |
 | `SUPABASE_KEY` | `service_role` key fra Supabase |
 
@@ -83,7 +83,6 @@ Legg inn følgende under **Settings → Secrets → Actions** i GitHub-repoet:
 
 **Nyhetsagent:**
 ```bash
-export ANTHROPIC_API_KEY=...
 export SUPABASE_URL=...
 export SUPABASE_KEY=...
 python main.py
@@ -119,20 +118,35 @@ Gå til **Actions → Pharma News Agent → Run workflow**. Du kan velge å kjø
 
 ## Kilder
 
+**Målrettede søk (Google News):** Karo/Decubal/Locobase/Apobase, Ibux/Paracet/reseptfritt, apotekkjedene, hud/tannhelse, Haleon/Kenvue/Beiersdorf/consumer health
+
 **Norske nyheter (13):** VG, E24, NRK, Dagbladet, Aftenposten, Dagsavisen, DN, Finansavisen, Nettavisen, TV2, Dagens Medisin, Farmatid, Dagligvarehandelen
 
 **Myndigheter (4):** FHI, SSB, DMP, Helsedirektoratet
 
-**Internasjonale (4):** Reuters, NYT, The Economist, Fierce Pharma
+**Internasjonale (3):** NYT, The Economist, Fierce Pharma – må alltid treffe et kjerne-ord
 
-Nøkkelord og kildeliste i `index.html` speiler `main.py` – oppdater begge ved endring.
+Kildeliste og relevans-ord i `index.html` speiler `main.py` – oppdater begge ved endring.
+
+---
+
+## Feilsøking
+
+Agenten skriver tydelige feil i GitHub Actions-loggen, og kjøringen blir rød hvis ingenting kan lagres.
+
+| Melding | Løsning |
+|---------|---------|
+| `SUPABASE_URL peker til en vert som ikke finnes` | Rett secreten `SUPABASE_URL` til `https://<prosjekt-id>.supabase.co` (samme prosjekt som i `index.html`). |
+| `N kilder ga ingen data` | Feeden er nede eller har endret adresse – sjekk `[FEED]`-linjene. |
+| Appen viser «Ingen nye saker siden …» | Agenten har ikke kjørt. GitHub skrur av planlagte workflows etter 60 dager uten aktivitet – aktiver under **Actions**. |
 
 ---
 
 ## Webapp-funksjoner
 
-- **Dagens brief** – toppsak med bilde + artikelliste siste 24 timer
-- **Ukesdigest** – AI-generert oppsummering av ukens viktigste, vises øverst i Dagens brief i 7 dager (kan skjules)
+- **Dagens brief** – den mest Karo-relevante saken som toppsak + artikkelliste siste 24 timer
+- **Kun sterke treff** – saker med score under 60 skjules som standard («Vis svake treff» viser alle)
+- **Ukesdigest** – oppsummering av ukens viktigste (topp-saker, Karo-merker, fordeling), vises øverst i Dagens brief i 7 dager (kan skjules)
 - **Helg/stille dager** – finnes ingen saker siste 24 timer, vises de siste sakene i stedet for en tom side
 - **Arkiv & søk** – fulltekstsøk, filtrering på kilde, kategori, merkevare og dato; «Last inn eldre saker» henter mer historikk
 - **Karo brand-badge** – artikler som nevner Decubal, Locobase, Apobase eller Flux merkes automatisk
@@ -149,7 +163,7 @@ Nøkkelord og kildeliste i `index.html` speiler `main.py` – oppdater begge ved
 | Komponent | Teknologi |
 |-----------|-----------|
 | Nyhetsagent | Python 3.12 |
-| AI-klassifisering | Claude Haiku (Anthropic) |
+| Relevans-scoring | Nøkkelord (regelbasert, ingen AI) |
 | Scheduler | GitHub Actions |
 | Database | Supabase (PostgreSQL) |
 | Frontend | Vanilla HTML/CSS/JS |
