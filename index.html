@@ -136,6 +136,8 @@
     .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
     .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-3); }
     .section-count { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+    .weak-toggle { background: none; border: none; padding: 0; font: inherit; color: var(--ink-3); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    .weak-toggle:hover { color: var(--ink-1); }
 
     /* ── Featured article ── */
     .article-featured { padding: 0 0 24px; border-bottom: 1px solid var(--rule); margin-bottom: 0; }
@@ -214,6 +216,8 @@
     .source-name { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink-1); margin-bottom: 4px; }
     .source-url { font-family: var(--mono); font-size: 8px; color: var(--ink-4); word-break: break-all; line-height: 1.5; }
     .keywords-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+    .kw-group { margin-bottom: 20px; }
+    .kw-group-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; }
     .kw-tag { background: var(--rule); border-radius: 2px; padding: 3px 9px; font-family: var(--mono); font-size: 10px; color: var(--ink-2); }
 
     /* ── Calibration ── */
@@ -580,7 +584,8 @@
     </div>
     <div class="sources-section">
       <div class="sources-section-title" id="kw-title">Nøkkelord-filter</div>
-      <div class="keywords-grid" id="keywords-grid"></div>
+      <p class="cal-intro">En sak sendes videre til AI-vurdering hvis den treffer minst ett kjerne-ord, eller to kontekst-ord. Internasjonale kilder må alltid treffe et kjerne-ord. Saker med score under 65 skjules som standard.</p>
+      <div id="keywords-grid"></div>
     </div>
   </div>
 
@@ -794,58 +799,93 @@ const KARO_BRANDS = ["Decubal","Locobase","Apobase","Flux","Ibux","Paracet"];
 // Speiler BRAND_KEYWORDS i main.py ("flux" alene er for generisk)
 const BRAND_KEYWORDS = {
   Decubal:["decubal"], Locobase:["locobase"], Apobase:["apobase"],
-  Flux:["flux tannpleie","flux tann","flux munn"], Ibux:["ibux"], Paracet:["paracet"],
+  Flux:["flux tannpleie","flux tann","flux munn","flux fluor"], Ibux:["ibux"], Paracet:["paracet"],
 };
 
-const SOURCES = ["Alle","E24","Finansavisen","DN","Aftenposten","NRK","VG","Dagbladet","Nettavisen","TV2","Dagens Medisin","Farmatid","Dagligvarehandelen","Reuters","NYT","The Economist","Fierce Pharma","FHI","SSB","DMP","Helsedirektoratet"];
-
+// Speiler RSS_FEEDS, CORE_TERMS og CONTEXT_TERMS i main.py – oppdater begge steder ved endring
 const RSS_FEEDS = {
-  "VG":             ["https://www.vg.no/rss/feed/forsiden/","https://www.vg.no/rss/feed/?categories=1069"],
-  "E24":            ["http://e24.no/rss2/","https://e24.no/rss2/?seksjon=boers-og-finans"],
-  "NRK":            ["https://www.nrk.no/toppsaker.rss","https://www.nrk.no/norge/toppsaker.rss"],
-  "Dagbladet":      ["https://www.dagbladet.no/?lab_viewport=rss"],
-  "Aftenposten":    ["https://www.aftenposten.no/rss/"],
-  "Dagsavisen":     ["https://www.dagsavisen.no/rss"],
-  "DN":             ["https://services.dn.no/api/feed/rss/"],
-  "Finansavisen":   ["https://ws.finansavisen.no/api/articles.rss","https://ws.finansavisen.no/api/articles.rss?category=B%C3%B8rs"],
-  "Nettavisen":     ["https://www.nettavisen.no/service/rich-rss?tag=nyheter"],
-  "TV2":            ["https://www.tv2.no/rss/nyheter/innenriks","https://www.tv2.no/rss/nyheter/utenriks"],
-  "Dagens Medisin": ["https://www.dagensmedisin.no/rss"],
-  "Farmatid":       ["https://www.farmatid.no/feed/"],
-  "Dagligvarehandelen": ["https://www.dagligvarehandelen.no/feed/"],
-  "Reuters":        ["https://feeds.reuters.com/reuters/businessNews","https://feeds.reuters.com/reuters/healthNews"],
-  "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml","https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
-  "The Economist":  ["https://news.google.com/rss/search?q=site:economist.com+health+pharma+consumer&hl=en&gl=NO&ceid=NO:en"],
-  "Fierce Pharma":  ["https://www.fiercepharma.com/rss/xml"],
-  "FHI":            ["https://www.fhi.no/rss/nyheter/"],
-  "SSB":            ["https://www.ssb.no/rss/"],
-  "DMP":            ["https://www.dmp.no/rss/nyheter/"],
-  "Helsedirektoratet": ["https://www.helsedirektoratet.no/rss"],
+ "VG": [
+  "https://www.vg.no/rss/feed/forsiden/",
+  "https://www.vg.no/rss/feed/?categories=1069"
+ ],
+ "E24": [
+  "https://e24.no/rss2/",
+  "https://e24.no/rss2/?seksjon=boers-og-finans"
+ ],
+ "NRK": [
+  "https://www.nrk.no/toppsaker.rss",
+  "https://www.nrk.no/norge/toppsaker.rss"
+ ],
+ "Dagbladet": [
+  "https://www.dagbladet.no/?lab_viewport=rss"
+ ],
+ "Aftenposten": [
+  "https://www.aftenposten.no/rss/"
+ ],
+ "Dagsavisen": [
+  "https://www.dagsavisen.no/rss"
+ ],
+ "DN": [
+  "https://services.dn.no/api/feed/rss/"
+ ],
+ "Finansavisen": [
+  "https://ws.finansavisen.no/api/articles.rss",
+  "https://ws.finansavisen.no/api/articles.rss?category=B%C3%B8rs"
+ ],
+ "Nettavisen": [
+  "https://www.nettavisen.no/service/rich-rss?tag=nyheter"
+ ],
+ "TV2": [
+  "https://www.tv2.no/rss/nyheter/innenriks",
+  "https://www.tv2.no/rss/nyheter/utenriks"
+ ],
+ "Dagens Medisin": [
+  "https://www.dagensmedisin.no/rss"
+ ],
+ "Farmatid": [
+  "https://www.farmatid.no/feed/"
+ ],
+ "Dagligvarehandelen": [
+  "https://www.dagligvarehandelen.no/feed/"
+ ],
+ "Google News": [
+  "https://news.google.com/rss/search?q=%22Karo+Healthcare%22+OR+%22Karo+Pharma%22+OR+Decubal+OR+Locobase+OR+Apobase+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=Ibux+OR+Paracet+OR+%22reseptfrie+legemidler%22+OR+egenomsorg+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=%22Apotek+1%22+OR+Vitusapotek+OR+%22Boots+apotek%22+OR+Farmasiet+OR+Apotera+OR+apotekbransjen+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=eksem+OR+%22t%C3%B8rr+hud%22+OR+hudpleie+OR+tannhelse+OR+tannkrem+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=Haleon+OR+Kenvue+OR+Beiersdorf+OR+%22consumer+health%22+Nordic+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "NYT": [
+  "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
+  "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"
+ ],
+ "The Economist": [
+  "https://news.google.com/rss/search?q=site%3Aeconomist.com+health+OR+pharma+OR+consumer+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "Fierce Pharma": [
+  "https://www.fiercepharma.com/rss/xml"
+ ],
+ "FHI": [
+  "https://www.fhi.no/rss/nyheter/"
+ ],
+ "SSB": [
+  "https://www.ssb.no/rss/"
+ ],
+ "DMP": [
+  "https://www.dmp.no/rss/nyheter/"
+ ],
+ "Helsedirektoratet": [
+  "https://www.helsedirektoratet.no/rss"
+ ]
 };
 
-// Speiler KEYWORDS i main.py – oppdater begge steder ved endring
-const KEYWORDS = [...new Set([
-  "Decubal","Locobase","Apobase","Flux",
-  "hudpleie","eksem","psoriasis","atopisk","barrierekrem","dermatologi","hudsykdom","fuktighetskrem","sårpleie","tørr hud","sensitiv hud","kløe","allergisk",
-  "tannpleie","munnhygiene","tannkrem","munnvann","tannhelse","karies","fluor","tannlege",
-  "apotek","Apotek 1","Vitusapotek","Boots","Apotekforeningen","apotekbransjen",
-  "Rema 1000","NorgesGruppen","Coop","Kiwi","Meny","Spar","dagligvare","hylleplass","sortiment","dagligvarebransjen","supermarked","matpris","dagligvarekjede",
-  "OTC","reseptfri","reseptfritt","egenpris",
-  "Beiersdorf","Eucerin","Nivea","Unilever","Vaseline","La Roche-Posay","Colgate","Oral-B","Sensodyne","CeraVe","Dove","Johnson & Johnson","Procter & Gamble","L'Oréal","Loreal",
-  "oppkjøp","fusjon","oppkjøpet","kjøper opp","private equity","KKR","Nordic Capital","EQT","Axel Johnson","Orkla","Schibsted","consumer health","konsumenthelse","investeringsfond","PE-fond",
-  "Legemiddelverket","Folkehelseinstituttet","FHI","reseptfrihet","markedsføringsloven","markedsføring av","Helse- og omsorgsdepartementet","helsepolitikk","helsestrategi","folkehelse","forebygging","EU-regulering","EFSA","emballasje","bærekraft","plastforbudet","grønn omstilling",
-  "forbrukertrender","forbrukervaner","kjøpekraft","prisvekst","inflasjon","kronekurs","renteøkning","handelsbalanse","import","eksport","bærekraftig forbruk","grønn forbruker",
-  "influencer","sosiale medier","digital markedsføring","reklameforbudet","merkevare","brand","TV-reklame","reklamebransjen",
-  "legemiddel","farmasi","helsesektor","bioteknologi","helsekost","naturmiddel","kosttilskudd","eldrebølge","kronisk sykdom",
-  "piller","pillebruk","pilleforbruk","medisinbruk","smertestillende","ibuprofen","paracetamol","reseptbelagt","legemiddelforbruk","selvmedisinering","egenbehandling","Paracet","Ibux","Asan","Paralgin",
-  // English
-  "skincare","skin care","eczema","atopic","moisturizer","dermatology",
-  "oral care","toothpaste","mouthwash","dental",
-  "pharmacy","pharmacies","drugstore","over-the-counter",
-  "healthcare","pharma","pharmaceutical","acquisition","merger","buyout",
-  "L Oreal","Johnson Johnson","skincare market","beauty market","health market",
-  "painkiller","pain relief","acetaminophen","retail health","health retail","drug store",
-])];
+const KEYWORD_GROUPS = [
+  {label:"Kjerne-ord · direkte Karo-relevant", terms:["apobase", "apotek", "apotekforeningen", "apotekloven", "apotera", "atopic dermatitis", "atopisk", "barrierekrem", "beiersdorf", "bioderma", "boots apotek", "boots norge", "cerave", "cetaphil", "colgate", "consumer health", "decubal", "dermatolog", "direktoratet for medisinske produkter", "dmp", "eczema", "egenbehandling", "egenomsorg", "eksem", "eucerin", "farmasiet", "fluortannkrem", "flux fluor", "flux munn", "flux tann", "fuktighetskrem", "haleon", "hudkrem", "hudlege", "hudpleie", "hudsykdom", "ibuprofen", "ibux", "karies", "karo healthcare", "karo pharma", "kenvue", "konsumenthelse", "la roche-posay", "legemiddelgrossist", "legemiddelloven", "legemiddelverket", "legemidler utenom apotek", "locobase", "lua-ordningen", "moisturiser", "moisturizer", "mouthwash", "munnhygiene", "munnskyll", "munnvann", "nivea", "norsk medisinaldepot", "nurofen", "oral care", "oral health", "oral-b", "orkla health", "otc", "over-the-counter", "pain relief", "painkiller", "panodil", "paracet", "paracetamol", "paralgin", "pepsodent", "perrigo", "pillebruk", "pilleforbruk", "pinex", "psoriasis", "reseptfri", "reseptfrie", "reseptfrihet", "reseptfritt", "self-care", "selvmedisinering", "sensitiv hud", "sensodyne", "skin care", "skincare", "smertestillende", "solidox", "stada", "tannhelse", "tannkrem", "tannpleie", "toothpaste", "tørr hud", "vichy", "vitusapotek", "voltaren", "zendium"]},
+  {label:"Kontekst-ord · teller bare sammen med andre treff", terms:["acquisition", "allergi", "buyout", "coop", "dagligvare", "e-handel", "eqt", "farmasi", "folkehelse", "forbruker", "forkjølelse", "fusjon", "handlevaner", "helsekost", "helsepolitikk", "hylleplass", "inflasjon", "influencer", "influensa", "johnson & johnson", "kiwi", "kjedemakt", "kjøpekraft", "kjøper opp", "kkr", "kosttilskudd", "kronekurs", "l'oréal", "legemiddel", "legemidler", "loreal", "markedsføring", "matkjede", "matpris", "meny", "merger", "merkevare", "netthandel", "nordic capital", "norgesgruppen", "oppkjøp", "oppkjøpsfond", "pe-fond", "pharma", "pharmacy", "pollen", "prisvekst", "private equity", "procter & gamble", "reklame", "rema 1000", "solkrem", "sortiment", "sosiale medier", "spar", "sunscreen", "takeover", "unilever"]},
+];
+
+// Saker under denne scoren skjules som standard (samme terskel som agenten bruker)
+const MIN_SCORE = 65;
 
 // ── Demo data (vises kun hvis databasen ikke svarer) ──────────────────────────
 const DEMO=[
@@ -861,6 +901,7 @@ const DEMO=[
 
 // ── State ──────────────────���──────────────────────────────────────────────────
 let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all", activeBrand="all";
+let showWeak=false, staleSince=null;
 let archiveOffset=0, archiveHasMore=false, briefFallback=false, usingDemo=false, loadToken=0, latestDigest=null;
 const ARCHIVE_PAGE=300;
 const feedback={};
@@ -876,6 +917,12 @@ function safeUrl(u){
   try{ const x=new URL(u,location.href); return /^https?:$/.test(x.protocol)?x.href:"#"; }catch(e){ return "#"; }
 }
 function cssUrl(u){ return esc(safeUrl(u).replace(/['"()\\\s]/g,c=>encodeURIComponent(c))); }
+// Skjul tekniske plassholdere fra eldre, nøkkelord-klassifiserte saker
+function displaySummary(a){
+  const s=(a.summary||"").trim();
+  if(/^Nøkkelord-klassifisert/i.test(s)) return a.ingress?String(a.ingress).slice(0,240):"";
+  return s.replace(/^\[Manuelt lagt til( av Karo-teamet)?\]\s*/,"");
+}
 function catLabel(id){ return (CAT_MAP[id]||{}).label||id||""; }
 function storeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function storeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
@@ -1006,8 +1053,10 @@ function loadMore(btn){
 }
 
 function renderNotice(){
-  document.getElementById("notice-container").innerHTML=usingDemo
-    ?'<div class="notice">⚠ Fikk ikke kontakt med databasen – viser eksempeldata.</div>':"";
+  let html="";
+  if(usingDemo) html+='<div class="notice">⚠ Fikk ikke kontakt med databasen – viser eksempeldata.</div>';
+  else if(staleSince) html+=`<div class="notice">⚠ Ingen nye saker siden ${esc(formatTime(staleSince))}. Nyhetsagenten kjører trolig ikke – sjekk GitHub Actions.</div>`;
+  document.getElementById("notice-container").innerHTML=html;
 }
 
 async function loadLastUpdated(){
@@ -1015,6 +1064,8 @@ async function loadLastUpdated(){
     const{data,error}=await sb.from("articles").select("created_at").order("created_at",{ascending:false}).limit(1);
     if(error||!data?.[0]) return;
     document.getElementById("last-updated").textContent=`Sist oppdatert ${formatTime(data[0].created_at)} · `;
+    // Mer enn 3 døgn uten nye saker (dekker helg) betyr at agenten har stoppet
+    if(Date.now()-new Date(data[0].created_at).getTime()>3*86400000){ staleSince=data[0].created_at; renderNotice(); }
   }catch(e){}
 }
 
@@ -1086,7 +1137,9 @@ async function loadFeedback(){
 function applyFilters(){
   const q=(document.getElementById("search-input")?.value||"").toLowerCase();
   const dateCutoff=activeDateRange!=="all"?new Date(Date.now()-parseInt(activeDateRange)*86400000):null;
+  let weak=0;
   const f=allArticles.filter(a=>{
+    if(!isStrong(a)&&!showWeak){ weak++; return false; }
     if(activeCategory!=="all"&&a.category!==activeCategory) return false;
     if(activeSource!=="Alle"&&a.source!==activeSource) return false;
     if(activeBrand!=="all"){
@@ -1103,11 +1156,37 @@ function applyFilters(){
     const bDate=new Date(b.published_at||b.created_at||0).getTime();
     return bDate-aDate;
   });
+  // Toppsaken i dagens brief er den mest Karo-relevante, ikke bare den nyeste
+  if(activeView==="today"&&f.length>1){
+    const rank=a=>(getBrands(a).length?100:0)+(a.relevance_score||0);
+    const best=f.reduce((x,y)=>rank(y)>rank(x)?y:x);
+    f.splice(f.indexOf(best),1); f.unshift(best);
+  }
+  weakCount=weak;
+  renderSrcBar(allArticles);
   renderCatBar(allArticles);
   renderBrandBar(allArticles);
   renderArticles(f);
-  document.getElementById("section-count").textContent=`${f.length} ${f.length===1?"sak":"saker"}`;
+  const weakBtn=(weakCount||showWeak)?` · <button class="weak-toggle" onclick="toggleWeak()">${showWeak?"Skjul svake treff":`Vis ${weakCount} svake treff`}</button>`:"";
+  document.getElementById("section-count").innerHTML=`${f.length} ${f.length===1?"sak":"saker"}${weakBtn}`;
   if(activeView==="today") document.getElementById("section-label").textContent=briefFallback?"Siste saker":"Siste 24 timer";
+}
+
+function isStrong(a){
+  return (a.relevance_score||0)>=MIN_SCORE||getBrands(a).length>0;
+}
+let weakCount=0;
+function toggleWeak(){ showWeak=!showWeak; applyFilters(); }
+
+// Kildefilteret bygges fra dataene (Google News gir mange ulike utgivere)
+function renderSrcBar(arts){
+  const c={};
+  arts.forEach(a=>{ if(a.source&&(showWeak||isStrong(a))) c[a.source]=(c[a.source]||0)+1; });
+  const srcs=Object.keys(c).sort((x,y)=>c[y]-c[x]).slice(0,18);
+  if(activeSource!=="Alle"&&!srcs.includes(activeSource)) srcs.push(activeSource);
+  document.getElementById("source-filters").innerHTML=
+    `<button class="src-btn${activeSource==="Alle"?" active":""}" data-src="Alle" onclick="setSrc(this.dataset.src)">Alle</button>`+
+    srcs.map(s=>`<button class="src-btn${activeSource===s?" active":""}" data-src="${esc(s)}" onclick="setSrc(this.dataset.src)">${esc(s)} <span class="cat-n">${c[s]||0}</span></button>`).join("");
 }
 
 // ── Render brand filter bar ───────────────────────────────────────────────────
@@ -1151,7 +1230,6 @@ function filtersActive(){
 function resetFilters(){
   activeCategory="all"; activeBrand="all"; activeSource="Alle"; activeDateRange="all";
   document.getElementById("search-input").value="";
-  document.querySelectorAll(".src-btn").forEach((b,i)=>b.classList.toggle("active",i===0));
   document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));
   applyFilters();
 }
@@ -1160,8 +1238,8 @@ function renderArticles(arts){
   const el=document.getElementById("articles-container");
   const sr=document.getElementById("stats-row");
   if(!arts.length){
-    const msg=activeView==="today"&&!filtersActive()?"Ingen nye saker ennå i dag":"Ingen saker funnet";
-    el.innerHTML=`<div class="empty">${msg}${filtersActive()?'<br><button class="empty-reset" onclick="resetFilters()">Nullstill filtre</button>':""}</div>`;
+    const msg=weakCount&&!showWeak?`Ingen sterke treff – ${weakCount} svake treff er skjult`:(activeView==="today"&&!filtersActive()?"Ingen nye saker ennå i dag":"Ingen saker funnet");
+    el.innerHTML=`<div class="empty">${msg}${filtersActive()?'<br><button class="empty-reset" onclick="resetFilters()">Nullstill filtre</button>':""}${weakCount&&!showWeak?' <button class="empty-reset" onclick="toggleWeak()">Vis svake treff</button>':""}</div>`;
     sr.classList.remove("visible");
     return;
   }
@@ -1193,7 +1271,7 @@ function renderArticles(arts){
         ${brands.map(b=>`<span class="af-brand-badge">★ ${esc(b)}</span>`).join("")}
       </div>
       <a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener noreferrer" class="af-title">${esc(f.title)}</a>
-      <div class="af-summary">${esc(f.summary)}</div>
+      <div class="af-summary">${esc(displaySummary(f))}</div>
       ${feedbackHtml(f.id)}
     </article>`;
   }
@@ -1218,7 +1296,7 @@ function renderArticles(arts){
           ${a.relevance_score?`<span class="m-score" title="Relevans-score">▲${esc(a.relevance_score)}</span>`:""}
         </div>
         <a href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer" class="ar-title-link"><h3 class="ar-title">${esc(a.title)}</h3></a>
-        <div class="ar-summary">${esc(a.summary)}</div>
+        <div class="ar-summary">${esc(displaySummary(a))}</div>
         ${feedbackHtml(a.id)}
       </div>
     </article>`;
@@ -1260,10 +1338,12 @@ function renderCalibration(){
 // ── Sources page ──────────────────────────────────────────────────────────────
 function renderSourcesPage(){
   document.getElementById("sources-grid").innerHTML=Object.entries(RSS_FEEDS).map(([name,urls])=>
-    urls.map(url=>`<div class="source-card"><div class="source-name">${esc(name)}</div><div class="source-url">${esc(url)}</div></div>`).join("")
+    urls.map(url=>`<div class="source-card"><div class="source-name">${esc(name)}</div><div class="source-url">${esc(url.includes("news.google.com")?"Søk: "+decodeURIComponent((url.match(/q=([^&]+)/)||[,""])[1].replace(/\+/g," ")).replace(" when:2d",""):url)}</div></div>`).join("")
   ).join("");
-  document.getElementById("keywords-grid").innerHTML=KEYWORDS.map(k=>`<span class="kw-tag">${esc(k)}</span>`).join("");
-  document.getElementById("kw-title").textContent=`Nøkkelord-filter · ${KEYWORDS.length} ord`;
+  document.getElementById("keywords-grid").innerHTML=KEYWORD_GROUPS.map(g=>
+    `<div class="kw-group"><div class="kw-group-label">${esc(g.label)} · ${g.terms.length}</div><div class="keywords-grid">${g.terms.map(k=>`<span class="kw-tag">${esc(k)}</span>`).join("")}</div></div>`
+  ).join("");
+  document.getElementById("kw-title").textContent="Relevans-filter";
   renderCalibration();
 }
 
@@ -1313,13 +1393,10 @@ window.addEventListener("hashchange",()=>{ const v=viewFromHash(); if(v!==active
 
 function setCat(cat){activeCategory=cat;applyFilters();}
 function setBrand(brand){activeBrand=brand;applyFilters();}
-function setSrc(src,btn){activeSource=src;document.querySelectorAll(".src-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
+function setSrc(src){activeSource=src;applyFilters();}
 function setDateRange(range,btn){activeDateRange=range;document.querySelectorAll(".date-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-document.getElementById("source-filters").innerHTML=SOURCES.map(s=>
-  `<button class="src-btn${s==="Alle"?" active":""}" onclick="setSrc('${s}',this)">${s}</button>`
-).join("");
 document.getElementById("date-filters").innerHTML=
   [{id:"all",label:"Alle datoer"},{id:"1",label:"I dag"},{id:"7",label:"7 dager"},{id:"30",label:"30 dager"},{id:"90",label:"90 dager"}]
   .map(r=>`<button class="date-btn${r.id==="all"?" active":""}" onclick="setDateRange('${r.id}',this)">${r.label}</button>`)

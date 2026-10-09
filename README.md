@@ -9,11 +9,12 @@ Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra n
 ## Hvordan det fungerer
 
 ```
-RSS-feeds (21 kilder)
+RSS-feeds + målrettede Google News-søk (Karo-merker, apotek, konkurrenter)
        ↓
-Nøkkelord-filter (~110 ord)
+Relevans-filter: minst ett kjerne-ord, eller to kontekst-ord (hele ord, ikke delstrenger)
        ↓
-Claude klassifiserer relevans + kategori + sammendrag
+Claude scorer Karo-relevans 0–100 etter fast rubrikk – kun score ≥ 65 lagres
+(uten API: streng regelbasert score, kun saker med kjerne-treff lagres)
        ↓
 Supabase (database)
        ↓
@@ -119,19 +120,35 @@ Gå til **Actions → Pharma News Agent → Run workflow**. Du kan velge å kjø
 
 ## Kilder
 
+**Målrettede søk (Google News):** Karo/Decubal/Locobase/Apobase, Ibux/Paracet/reseptfritt, apotekkjedene, hud/tannhelse, Haleon/Kenvue/Beiersdorf/consumer health
+
 **Norske nyheter (13):** VG, E24, NRK, Dagbladet, Aftenposten, Dagsavisen, DN, Finansavisen, Nettavisen, TV2, Dagens Medisin, Farmatid, Dagligvarehandelen
 
 **Myndigheter (4):** FHI, SSB, DMP, Helsedirektoratet
 
-**Internasjonale (4):** Reuters, NYT, The Economist, Fierce Pharma
+**Internasjonale (3):** NYT, The Economist, Fierce Pharma – må alltid treffe et kjerne-ord
 
-Nøkkelord og kildeliste i `index.html` speiler `main.py` – oppdater begge ved endring.
+Kildeliste og relevans-ord i `index.html` speiler `main.py` – oppdater begge ved endring.
+
+---
+
+## Feilsøking
+
+Agenten skriver tydelige feil i GitHub Actions-loggen, og kjøringen blir rød hvis ingenting kan lagres.
+
+| Melding | Løsning |
+|---------|---------|
+| `Anthropic-kontoen er tom for kreditt` | Fyll på under Plans & Billing på console.anthropic.com. Til da brukes streng lokal klassifisering. |
+| `SUPABASE_URL peker til en vert som ikke finnes` | Rett secreten `SUPABASE_URL` til `https://<prosjekt-id>.supabase.co` (samme prosjekt som i `index.html`). |
+| `N kilder ga ingen data` | Feeden er nede eller har endret adresse – sjekk `[FEED]`-linjene. |
+| Appen viser «Ingen nye saker siden …» | Agenten har ikke kjørt. GitHub skrur av planlagte workflows etter 60 dager uten aktivitet – aktiver under **Actions**. |
 
 ---
 
 ## Webapp-funksjoner
 
-- **Dagens brief** – toppsak med bilde + artikelliste siste 24 timer
+- **Dagens brief** – den mest Karo-relevante saken som toppsak + artikkelliste siste 24 timer
+- **Kun sterke treff** – saker med score under 65 skjules som standard («Vis svake treff» viser alle)
 - **Ukesdigest** – AI-generert oppsummering av ukens viktigste, vises øverst i Dagens brief i 7 dager (kan skjules)
 - **Helg/stille dager** – finnes ingen saker siste 24 timer, vises de siste sakene i stedet for en tom side
 - **Arkiv & søk** – fulltekstsøk, filtrering på kilde, kategori, merkevare og dato; «Last inn eldre saker» henter mer historikk
