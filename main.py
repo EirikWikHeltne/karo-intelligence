@@ -24,17 +24,25 @@ except ImportError:
 
 # ── Konfigurasjon ─────────────────────────────────────────────────────────────
 
+GN_REGIONS = {"no": ("no", "NO", "NO:no"), "sv": ("sv", "SE", "SE:sv"),
+              "da": ("da", "DK", "DK:da"), "en": ("en", "NO", "NO:en")}
+
+
 def google_news(query: str, lang: str = "no") -> str:
-    """Google News-søk som RSS. `when:2d` holder resultatene ferske."""
-    region = "NO:no" if lang == "no" else "NO:en"
+    """Google News-søk som RSS. `when:2d` holder resultatene ferske.
+    Brukes også for fagpresse uten fungerende RSS (site:-søk)."""
+    hl, gl, ceid = GN_REGIONS[lang]
     return (f"https://news.google.com/rss/search?q={quote_plus(query + ' when:2d')}"
-            f"&hl={lang}&gl=NO&ceid={region}")
+            f"&hl={hl}&gl={gl}&ceid={ceid}")
+
+
+def site(domain: str, lang: str = "no", extra: str = "") -> list[str]:
+    return [google_news(f"site:{domain} {extra}".strip(), lang)]
 
 
 RSS_FEEDS = {
-    # Norske kilder
-    "VG":             ["https://www.vg.no/rss/feed/forsiden/",
-                       "https://www.vg.no/rss/feed/?categories=1069"],
+    # ── Norske nyhetsmedier ──
+    "VG":             ["https://www.vg.no/rss/feed/?categories=1069"],
     "E24":            ["https://e24.no/rss2/",
                        "https://e24.no/rss2/?seksjon=boers-og-finans"],
     "NRK":            ["https://www.nrk.no/toppsaker.rss",
@@ -48,35 +56,74 @@ RSS_FEEDS = {
     "Nettavisen":     ["https://www.nettavisen.no/service/rich-rss?tag=nyheter"],
     "TV2":            ["https://www.tv2.no/rss/nyheter/innenriks",
                        "https://www.tv2.no/rss/nyheter/utenriks"],
-    "Dagens Medisin": ["https://www.dagensmedisin.no/rss"],
-    "Farmatid":       ["https://www.farmatid.no/feed/"],
-    "Dagligvarehandelen": ["https://www.dagligvarehandelen.no/feed/"],
-    # Målrettede søk – treffer Karo, kunder og konkurrenter direkte, uansett avis
+
+    # ── Fagpresse: dagligvare og handel (kategoristyring, sortiment, kjeder) ──
+    # Disse har ikke fungerende RSS (404), så de hentes via Google News site:-søk.
+    "Dagligvarehandelen": site("dagligvarehandelen.no"),
+    "Handelsbladet FK":   site("hbfk.no"),
+    "DLF":                site("dlf.no"),                 # Dagligvareleverandørenes forening
+    "Virke":              site("virke.no"),
+    "Kampanje":           site("kampanje.com"),           # markedsføring, medier, lanseringer
+
+    # ── Fagpresse: apotek, legemidler og helse ──
+    "Farmatid":           site("farmatid.no"),
+    "Apotekforeningen":   site("apotek.no"),
+    "Dagens Medisin":     site("dagensmedisin.no"),
+    "Tannlegetidende":    site("tannlegetidende.no"),
+    "Legemiddelindustrien": site("lmi.no"),
+    "DMP":                site("dmp.no"),                 # Direktoratet for medisinske produkter
+    "Helsedirektoratet":  site("helsedirektoratet.no"),
+    "FHI":                ["https://www.fhi.no/rss/nyheter/"],
+    "SSB":                ["https://www.ssb.no/rss/"],
+
+    # ── Pressemeldinger fra kunder og konkurrenter (NTB Kommunikasjon) ──
+    "NTB Kommunikasjon":  site("kommunikasjon.ntb.no",
+                               extra="Apotek OR NorgesGruppen OR \"Rema 1000\" OR Coop OR Orkla OR Haleon OR Beiersdorf"),
+
+    # ── Nordisk fagpresse ──
+    "Fri Köpenskap":      site("fri-kopenskap.se", "sv"),   # svensk dagligvare
+    "Dagligvarunytt":     site("dagligvarunytt.se", "sv"),
+    "Market":             site("market.se", "sv"),          # svensk handel
+    "Svensk Farmaci":     site("svenskfarmaci.se", "sv"),   # svensk apotek
+    "Dagligvarehandlen DK": site("dagligvarehandlen.dk", "da"),
+
+    # ── Målrettede søk – treffer Karo, kunder og konkurrenter i alle medier ──
     "Google News":    [
         google_news('"Karo Healthcare" OR "Karo Pharma" OR Decubal OR Locobase OR Apobase'),
         google_news('Ibux OR Paracet OR "reseptfrie legemidler" OR egenomsorg'),
         google_news('"Apotek 1" OR Vitusapotek OR "Boots apotek" OR Farmasiet OR Apotera OR apotekbransjen'),
         google_news('eksem OR "tørr hud" OR hudpleie OR tannhelse OR tannkrem'),
-        google_news('Haleon OR Kenvue OR Beiersdorf OR "consumer health" Nordic', lang="en"),
+        google_news('kategoristyring OR planogram OR hylleplass OR sortimentsendring OR "egne merkevarer"'),
+        google_news('"legemidler i dagligvare" OR "legemidler utenom apotek" OR LUA-ordningen'),
+        google_news('"Karo Healthcare" OR Decubal OR Locobase', "sv"),
+        google_news('Haleon OR Kenvue OR Beiersdorf OR "consumer health" Nordic', "en"),
     ],
-    # Internasjonale kilder (krever kjerne-treff, se STRICT_SOURCES)
-    "NYT":            ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
-                       "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
-    "The Economist":  [google_news("site:economist.com health OR pharma OR consumer", lang="en")],
-    "Fierce Pharma":  ["https://www.fiercepharma.com/rss/xml"],
-    # Offentlige/bransje-kilder
-    "FHI":            ["https://www.fhi.no/rss/nyheter/"],
-    "SSB":            ["https://www.ssb.no/rss/"],
-    "DMP":            ["https://www.dmp.no/rss/nyheter/"],        # Direktoratet for medisinske produkter
-    "Helsedirektoratet": ["https://www.helsedirektoratet.no/rss"],
+
+    # ── Internasjonal fagpresse (må treffe et kjerne-ord, se STRICT_SOURCES) ──
+    "Fierce Pharma":       ["https://www.fiercepharma.com/rss/xml"],
+    "HBW Insight":         site("insights.citeline.com/hbw-insight", "en"),  # consumer health / OTC
+    "Cosmetics Design":    site("cosmeticsdesign-europe.com", "en"),
+    "Chemist+Druggist":    site("chemistanddruggist.co.uk", "en"),           # apotek/OTC, UK
+    "The Grocer":          site("thegrocer.co.uk", "en"),                    # dagligvare, UK
+    "NYT":                 ["https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
+                            "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"],
+    "The Economist":       [google_news("site:economist.com health OR pharma OR consumer", "en")],
 }
 
 # Brede kilder der et enkelt kontekst-ord ikke er nok – artikkelen må treffe et kjerne-ord.
 # (Fierce Pharma sendte tidligere alle 25 saker videre fordi "pharma" traff alt.)
-STRICT_SOURCES = {"NYT", "The Economist", "Fierce Pharma", "SSB"}
+STRICT_SOURCES = {"NYT", "The Economist", "Fierce Pharma", "SSB", "HBW Insight", "Cosmetics Design",
+                  "Chemist+Druggist", "The Grocer", "Fri Köpenskap", "Dagligvarunytt", "Market",
+                  "Dagligvarehandlen DK", "Virke", "Kampanje"}
 
 # Bransjekilder der nesten alt er relevant – alle saker tas med, med en grunnscore.
-TRADE_SOURCES = {"Farmatid": 60, "Dagens Medisin": 50, "DMP": 55, "Dagligvarehandelen": 50}
+# Apotek-/helsefag: grunnscore ≥ 60 → vises. Dagligvarefag: 50 → vises først med helse-/Karo-treff,
+# ellers som "svake treff" (mye av dagligvarepressen handler om mat).
+TRADE_SOURCES = {
+    "Farmatid": 60, "Apotekforeningen": 60, "Tannlegetidende": 55, "Legemiddelindustrien": 50,
+    "Dagens Medisin": 50, "DMP": 55, "Helsedirektoratet": 45, "Svensk Farmaci": 55,
+    "Dagligvarehandelen": 50, "Handelsbladet FK": 50, "DLF": 50, "NTB Kommunikasjon": 50,
+}
 
 FEED_TIMEOUT = 20
 FEED_HEADERS = {
@@ -103,12 +150,15 @@ CORE_TERMS = {
         "utslett", "kløe", "kløende", "bleieutslett", "babyhud", "barnehud", "sprukne hender",
         "sårpleie", "sårheling", "fotsopp", "neglesopp", "hudpleieprodukt", "solskadet hud",
         "skincare", "skin care", "eczema", "atopic dermatitis", "dry skin", "moisturiser", "moisturizer",
+        # svensk/dansk
+        "hudvård", "torr hud", "hudkräm", "mjukgörande", "hudpleje", "tør hud", "fugtighedscreme",
     ],
     "oral-care": [
         "tannpleie", "tannkrem", "tannbørste", "munnskyll", "munnvann", "tannhelse", "tannlege",
         "tannråte", "tannkjøtt", "tennene", "karies", "munnhygiene", "munnhelse", "munntørrhet",
         "dårlig ånde", "fluor", "fluortannkrem", "tannhelsetjeneste",
         "oral care", "oral health", "toothpaste", "mouthwash", "dental care",
+        "tandkräm", "tandvård", "munhälsa", "tandhälsa", "tandpasta", "mundskyl",
     ],
     "apotek": [
         "apotek", "vitusapotek", "boots apotek", "boots norge", "farmasiet", "apotera",
@@ -120,6 +170,9 @@ CORE_TERMS = {
         "medisinmangel", "hodepine", "migrene", "feber", "forkjølelse", "influensa", "allergi",
         "pollen", "antihistamin", "nesespray",
         "over-the-counter", "self-care", "painkiller", "pain relief", "pharmacy chain",
+        "receptfri", "receptfria", "receptfritt", "egenvård", "smärtstillande", "värktablett",
+        "apoteket", "apotek hjärtat", "kronans apotek", "lloydsapotek", "apoteksgruppen",
+        "håndkøb", "matas", "apotekerforeningen",
     ],
     "konkurrenter": [
         "beiersdorf", "eucerin", "nivea", "cerave", "la roche-posay", "vichy", "cetaphil",
@@ -129,6 +182,13 @@ CORE_TERMS = {
         "perrigo", "stada", "viatris",
     ],
     "M&A": ["consumer health", "konsumenthelse", "otc-markedet", "helse og skjønnhet"],
+    "dagligvare": [
+        "kategoristyring", "kategoriansvarlig", "category management", "category manager",
+        "planogram", "hylleplass", "hyllemeter", "sortimentsendring", "sortimentsrevisjon",
+        "kjedeavtale", "innkjøpsavtale",
+        "personlig pleie", "hygieneartikler", "health & beauty", "health and beauty",
+        "hyllplats", "sortimentsbyte", "egenvårdssortiment",
+    ],
     "regulatorisk": [
         "legemiddelverket", "direktoratet for medisinske produkter", "dmp",
         "legemiddelloven", "apotekloven", "reseptfrihet", "legemiddelreklame",

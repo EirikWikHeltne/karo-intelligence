@@ -9,7 +9,7 @@ Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra n
 ## Hvordan det fungerer
 
 ```
-RSS-feeds + målrettede Google News-søk (Karo-merker, apotek, konkurrenter)
+RSS-feeds + fagpresse (dagligvare, apotek, Norden) + målrettede Google News-søk
        ↓
 Relevans-filter: minst ett kjerne-ord, eller to kontekst-ord (hele ord, ikke delstrenger)
        ↓
@@ -118,13 +118,21 @@ Gå til **Actions → Pharma News Agent → Run workflow**. Du kan velge å kjø
 
 ## Kilder
 
-**Målrettede søk (Google News):** Karo/Decubal/Locobase/Apobase, Ibux/Paracet/reseptfritt, apotekkjedene, hud/tannhelse, Haleon/Kenvue/Beiersdorf/consumer health
+**Fagpresse dagligvare/handel (kategoristyring):** Dagligvarehandelen, Handelsbladet FK, DLF (Dagligvareleverandørenes forening), Virke, Kampanje
 
-**Norske nyheter (13):** VG, E24, NRK, Dagbladet, Aftenposten, Dagsavisen, DN, Finansavisen, Nettavisen, TV2, Dagens Medisin, Farmatid, Dagligvarehandelen
+**Fagpresse apotek/helse:** Farmatid, Apotekforeningen, Dagens Medisin, Tannlegetidende, Legemiddelindustrien (LMI), DMP, Helsedirektoratet, FHI, SSB
 
-**Myndigheter (4):** FHI, SSB, DMP, Helsedirektoratet
+**Pressemeldinger:** NTB Kommunikasjon (Apotek, NorgesGruppen, Rema 1000, Coop, Orkla, Haleon, Beiersdorf)
 
-**Internasjonale (3):** NYT, The Economist, Fierce Pharma – må alltid treffe et kjerne-ord
+**Nordisk fagpresse:** Fri Köpenskap, Dagligvarunytt, Market, Svensk Farmaci (SE), Dagligvarehandlen (DK)
+
+**Målrettede søk (Google News):** Karo-merkene, Ibux/Paracet/reseptfritt, apotekkjedene, hud/tannhelse, kategoristyring/planogram/hylleplass, legemidler i dagligvare (LUA), Haleon/Kenvue/Beiersdorf
+
+**Norske nyheter:** VG, E24, NRK, Dagbladet, Aftenposten, Dagsavisen, DN, Finansavisen, Nettavisen, TV2
+
+**Internasjonal fagpresse:** Fierce Pharma, HBW Insight (consumer health), Cosmetics Design Europe, Chemist+Druggist, The Grocer, NYT, The Economist
+
+Fagpresse uten fungerende RSS hentes via Google News `site:`-søk. Brede og utenlandske kilder må treffe et kjerne-ord; apotekfag tas alltid med, dagligvarefag vises når saken handler om helse, skjønnhet eller reseptfritt.
 
 Kildeliste og relevans-ord i `index.html` speiler `main.py` – oppdater begge ved endring.
 
