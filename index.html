@@ -579,12 +579,12 @@
       </table>
     </div>
     <div class="sources-section">
-      <div class="sources-section-title">RSS-kilder</div>
+      <div class="sources-section-title">Kilder · fagpresse og nyheter</div>
       <div class="sources-grid" id="sources-grid"></div>
     </div>
     <div class="sources-section">
       <div class="sources-section-title" id="kw-title">Nøkkelord-filter</div>
-      <p class="cal-intro">Saker scores med nøkkelord – ingen AI. Et Karo-merke gir 95. Et kjerne-ord gir 60–90 (høyere når det står i tittelen). Bare kontekst-ord gir 35–55. Bransjekilder (Farmatid, Dagens Medisin, DMP, Dagligvarehandelen) tas alltid med. Internasjonale kilder må treffe et kjerne-ord. Saker under 60 vises som «svake treff».</p>
+      <p class="cal-intro">Saker scores med nøkkelord – ingen AI. Et Karo-merke gir 95. Et kjerne-ord gir 60–90 (høyere når det står i tittelen). Bare kontekst-ord gir 35–55. Fagpresse for apotek, helse og dagligvare (Farmatid, Apotekforeningen, Dagligvarehandelen, Handelsbladet FK, DLF m.fl.) tas alltid med. Internasjonale kilder må treffe et kjerne-ord. Saker under 60 vises som «svake treff».</p>
       <div id="keywords-grid"></div>
     </div>
   </div>
@@ -805,7 +805,6 @@ const BRAND_KEYWORDS = {
 // Speiler RSS_FEEDS, CORE_TERMS og CONTEXT_TERMS i main.py – oppdater begge steder ved endring
 const RSS_FEEDS = {
  "VG": [
-  "https://www.vg.no/rss/feed/forsiden/",
   "https://www.vg.no/rss/feed/?categories=1069"
  ],
  "E24": [
@@ -839,31 +838,41 @@ const RSS_FEEDS = {
   "https://www.tv2.no/rss/nyheter/innenriks",
   "https://www.tv2.no/rss/nyheter/utenriks"
  ],
- "Dagens Medisin": [
-  "https://www.dagensmedisin.no/rss"
+ "Dagligvarehandelen": [
+  "https://news.google.com/rss/search?q=site%3Adagligvarehandelen.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
+ ],
+ "Handelsbladet FK": [
+  "https://news.google.com/rss/search?q=site%3Ahbfk.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
+ ],
+ "DLF": [
+  "https://news.google.com/rss/search?q=site%3Adlf.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
+ ],
+ "Virke": [
+  "https://news.google.com/rss/search?q=site%3Avirke.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
+ ],
+ "Kampanje": [
+  "https://news.google.com/rss/search?q=site%3Akampanje.com+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
  "Farmatid": [
-  "https://www.farmatid.no/feed/"
+  "https://news.google.com/rss/search?q=site%3Afarmatid.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
- "Dagligvarehandelen": [
-  "https://www.dagligvarehandelen.no/feed/"
+ "Apotekforeningen": [
+  "https://news.google.com/rss/search?q=site%3Aapotek.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
- "Google News": [
-  "https://news.google.com/rss/search?q=%22Karo+Healthcare%22+OR+%22Karo+Pharma%22+OR+Decubal+OR+Locobase+OR+Apobase+when%3A2d&hl=no&gl=NO&ceid=NO:no",
-  "https://news.google.com/rss/search?q=Ibux+OR+Paracet+OR+%22reseptfrie+legemidler%22+OR+egenomsorg+when%3A2d&hl=no&gl=NO&ceid=NO:no",
-  "https://news.google.com/rss/search?q=%22Apotek+1%22+OR+Vitusapotek+OR+%22Boots+apotek%22+OR+Farmasiet+OR+Apotera+OR+apotekbransjen+when%3A2d&hl=no&gl=NO&ceid=NO:no",
-  "https://news.google.com/rss/search?q=eksem+OR+%22t%C3%B8rr+hud%22+OR+hudpleie+OR+tannhelse+OR+tannkrem+when%3A2d&hl=no&gl=NO&ceid=NO:no",
-  "https://news.google.com/rss/search?q=Haleon+OR+Kenvue+OR+Beiersdorf+OR+%22consumer+health%22+Nordic+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ "Dagens Medisin": [
+  "https://news.google.com/rss/search?q=site%3Adagensmedisin.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
- "NYT": [
-  "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
-  "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"
+ "Tannlegetidende": [
+  "https://news.google.com/rss/search?q=site%3Atannlegetidende.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
- "The Economist": [
-  "https://news.google.com/rss/search?q=site%3Aeconomist.com+health+OR+pharma+OR+consumer+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ "Legemiddelindustrien": [
+  "https://news.google.com/rss/search?q=site%3Almi.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
- "Fierce Pharma": [
-  "https://www.fiercepharma.com/rss/xml"
+ "DMP": [
+  "https://news.google.com/rss/search?q=site%3Admp.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
+ ],
+ "Helsedirektoratet": [
+  "https://news.google.com/rss/search?q=site%3Ahelsedirektoratet.no+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
  "FHI": [
   "https://www.fhi.no/rss/nyheter/"
@@ -871,16 +880,60 @@ const RSS_FEEDS = {
  "SSB": [
   "https://www.ssb.no/rss/"
  ],
- "DMP": [
-  "https://www.dmp.no/rss/nyheter/"
+ "NTB Kommunikasjon": [
+  "https://news.google.com/rss/search?q=site%3Akommunikasjon.ntb.no+Apotek+OR+NorgesGruppen+OR+%22Rema+1000%22+OR+Coop+OR+Orkla+OR+Haleon+OR+Beiersdorf+when%3A2d&hl=no&gl=NO&ceid=NO:no"
  ],
- "Helsedirektoratet": [
-  "https://www.helsedirektoratet.no/rss"
+ "Fri Köpenskap": [
+  "https://news.google.com/rss/search?q=site%3Afri-kopenskap.se+when%3A2d&hl=sv&gl=SE&ceid=SE:sv"
+ ],
+ "Dagligvarunytt": [
+  "https://news.google.com/rss/search?q=site%3Adagligvarunytt.se+when%3A2d&hl=sv&gl=SE&ceid=SE:sv"
+ ],
+ "Market": [
+  "https://news.google.com/rss/search?q=site%3Amarket.se+when%3A2d&hl=sv&gl=SE&ceid=SE:sv"
+ ],
+ "Svensk Farmaci": [
+  "https://news.google.com/rss/search?q=site%3Asvenskfarmaci.se+when%3A2d&hl=sv&gl=SE&ceid=SE:sv"
+ ],
+ "Dagligvarehandlen DK": [
+  "https://news.google.com/rss/search?q=site%3Adagligvarehandlen.dk+when%3A2d&hl=da&gl=DK&ceid=DK:da"
+ ],
+ "Google News": [
+  "https://news.google.com/rss/search?q=%22Karo+Healthcare%22+OR+%22Karo+Pharma%22+OR+Decubal+OR+Locobase+OR+Apobase+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=Ibux+OR+Paracet+OR+%22reseptfrie+legemidler%22+OR+egenomsorg+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=%22Apotek+1%22+OR+Vitusapotek+OR+%22Boots+apotek%22+OR+Farmasiet+OR+Apotera+OR+apotekbransjen+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=eksem+OR+%22t%C3%B8rr+hud%22+OR+hudpleie+OR+tannhelse+OR+tannkrem+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=kategoristyring+OR+planogram+OR+hylleplass+OR+sortimentsendring+OR+%22egne+merkevarer%22+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=%22legemidler+i+dagligvare%22+OR+%22legemidler+utenom+apotek%22+OR+LUA-ordningen+when%3A2d&hl=no&gl=NO&ceid=NO:no",
+  "https://news.google.com/rss/search?q=%22Karo+Healthcare%22+OR+Decubal+OR+Locobase+when%3A2d&hl=sv&gl=SE&ceid=SE:sv",
+  "https://news.google.com/rss/search?q=Haleon+OR+Kenvue+OR+Beiersdorf+OR+%22consumer+health%22+Nordic+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "Fierce Pharma": [
+  "https://www.fiercepharma.com/rss/xml"
+ ],
+ "HBW Insight": [
+  "https://news.google.com/rss/search?q=site%3Ainsights.citeline.com%2Fhbw-insight+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "Cosmetics Design": [
+  "https://news.google.com/rss/search?q=site%3Acosmeticsdesign-europe.com+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "Chemist+Druggist": [
+  "https://news.google.com/rss/search?q=site%3Achemistanddruggist.co.uk+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "The Grocer": [
+  "https://news.google.com/rss/search?q=site%3Athegrocer.co.uk+when%3A2d&hl=en&gl=NO&ceid=NO:en"
+ ],
+ "NYT": [
+  "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml",
+  "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"
+ ],
+ "The Economist": [
+  "https://news.google.com/rss/search?q=site%3Aeconomist.com+health+OR+pharma+OR+consumer+when%3A2d&hl=en&gl=NO&ceid=NO:en"
  ]
 };
 
 const KEYWORD_GROUPS = [
-  {label:"Kjerne-ord · direkte Karo-relevant", terms:["akne", "allergi", "antihistamin", "apobase", "apotek", "apotekets", "apotekforeningen", "apotekloven", "apotera", "atopi", "atopic dermatitis", "atopisk", "babyhud", "barnehud", "barrierekrem", "beiersdorf", "bepanthen", "bioderma", "bleieutslett", "boots apotek", "boots norge", "cerave", "cetaphil", "colgate", "consumer health", "decubal", "dental care", "dermatitt", "dermatolog", "direktoratet for medisinske produkter", "ditt apotek", "dmp", "dry skin", "dårlig ånde", "eczema", "egenbehandling", "egenomsorg", "eksem", "eucerin", "farmasiet", "farmasøyt", "feber", "fluor", "fluortannkrem", "flux fluor", "flux munn", "flux tann", "forkjølelse", "fotsopp", "fuktighetskrem", "galderma", "haleon", "helse og skjønnhet", "hodepine", "huden", "hudhelse", "hudkrem", "hudlege", "hudpleie", "hudpleieprodukt", "hudproblem", "hudsykdom", "hudtype", "håndkjøp", "ibuprofen", "ibux", "influensa", "karies", "karo healthcare", "karo pharma", "kenvue", "kløe", "kløende", "konsumenthelse", "kviser", "l'oréal", "la roche-posay", "legemiddelbruk", "legemiddelgrossist", "legemiddelloven", "legemiddelmangel", "legemiddelreklame", "legemiddelverket", "legemidler i butikk", "legemidler utenom apotek", "locobase", "loreal", "lua-ordningen", "markedsføring av legemidler", "medisinbruk", "medisinmangel", "migrene", "moisturiser", "moisturizer", "mouthwash", "munnhelse", "munnhygiene", "munnskyll", "munntørrhet", "munnvann", "neglesopp", "nesespray", "nettapotek", "nivea", "norsk medisinaldepot", "nurofen", "oral care", "oral health", "oral-b", "orkla health", "otc", "otc-markedet", "over-the-counter", "pain relief", "painkiller", "panodil", "paracet", "paracetamol", "paralgin", "pepsodent", "perrigo", "pharmacy chain", "pillebruk", "pilleforbruk", "pinex", "pollen", "procter & gamble", "psoriasis", "reseptfri", "reseptfrie", "reseptfrihet", "reseptfritt", "rosacea", "self-care", "selvmedisinering", "sensitiv hud", "sensodyne", "skin care", "skincare", "smertelindring", "smertestillende", "solidox", "solskadet hud", "sprukne hender", "stada", "sårheling", "sårpleie", "tannbørste", "tannhelse", "tannhelsetjeneste", "tannkjøtt", "tannkrem", "tannlege", "tannpleie", "tannråte", "tennene", "toothpaste", "tørr hud", "utslett", "viatris", "vichy", "vitusapotek", "voltaren", "weleda", "zendium"]},
+  {label:"Kjerne-ord · direkte Karo-relevant", terms:["akne", "allergi", "antihistamin", "apobase", "apotek", "apotek hjärtat", "apotekerforeningen", "apoteket", "apotekets", "apotekforeningen", "apotekloven", "apoteksgruppen", "apotera", "atopi", "atopic dermatitis", "atopisk", "babyhud", "barnehud", "barrierekrem", "beiersdorf", "bepanthen", "bioderma", "bleieutslett", "boots apotek", "boots norge", "category management", "category manager", "cerave", "cetaphil", "colgate", "consumer health", "decubal", "dental care", "dermatitt", "dermatolog", "direktoratet for medisinske produkter", "ditt apotek", "dmp", "dry skin", "dårlig ånde", "eczema", "egenbehandling", "egenomsorg", "egenvård", "egenvårdssortiment", "eksem", "eucerin", "farmasiet", "farmasøyt", "feber", "fluor", "fluortannkrem", "flux fluor", "flux munn", "flux tann", "forkjølelse", "fotsopp", "fugtighedscreme", "fuktighetskrem", "galderma", "haleon", "health & beauty", "health and beauty", "helse og skjønnhet", "hodepine", "huden", "hudhelse", "hudkrem", "hudkräm", "hudlege", "hudpleie", "hudpleieprodukt", "hudpleje", "hudproblem", "hudsykdom", "hudtype", "hudvård", "hygieneartikler", "hyllemeter", "hylleplass", "hyllplats", "håndkjøp", "håndkøb", "ibuprofen", "ibux", "influensa", "innkjøpsavtale", "karies", "karo healthcare", "karo pharma", "kategoriansvarlig", "kategoristyring", "kenvue", "kjedeavtale", "kløe", "kløende", "konsumenthelse", "kronans apotek", "kviser", "l'oréal", "la roche-posay", "legemiddelbruk", "legemiddelgrossist", "legemiddelloven", "legemiddelmangel", "legemiddelreklame", "legemiddelverket", "legemidler i butikk", "legemidler utenom apotek", "lloydsapotek", "locobase", "loreal", "lua-ordningen", "markedsføring av legemidler", "matas", "medisinbruk", "medisinmangel", "migrene", "mjukgörande", "moisturiser", "moisturizer", "mouthwash", "mundskyl", "munhälsa", "munnhelse", "munnhygiene", "munnskyll", "munntørrhet", "munnvann", "neglesopp", "nesespray", "nettapotek", "nivea", "norsk medisinaldepot", "nurofen", "oral care", "oral health", "oral-b", "orkla health", "otc", "otc-markedet", "over-the-counter", "pain relief", "painkiller", "panodil", "paracet", "paracetamol", "paralgin", "pepsodent", "perrigo", "personlig pleie", "pharmacy chain", "pillebruk", "pilleforbruk", "pinex", "planogram", "pollen", "procter & gamble", "psoriasis", "receptfri", "receptfria", "receptfritt", "reseptfri", "reseptfrie", "reseptfrihet", "reseptfritt", "rosacea", "self-care", "selvmedisinering", "sensitiv hud", "sensodyne", "skin care", "skincare", "smertelindring", "smertestillende", "smärtstillande", "solidox", "solskadet hud", "sortimentsbyte", "sortimentsendring", "sortimentsrevisjon", "sprukne hender", "stada", "sårheling", "sårpleie", "tandhälsa", "tandkräm", "tandpasta", "tandvård", "tannbørste", "tannhelse", "tannhelsetjeneste", "tannkjøtt", "tannkrem", "tannlege", "tannpleie", "tannråte", "tennene", "toothpaste", "torr hud", "tør hud", "tørr hud", "utslett", "viatris", "vichy", "vitusapotek", "voltaren", "värktablett", "weleda", "zendium"]},
   {label:"Kontekst-ord · teller bare sammen med andre treff", terms:["acquisition", "bayer", "beauty", "bivirkning", "bunnpris", "buyout", "coop", "dagligvare", "detaljhandel", "e-handel", "egne merkevarer", "eqt", "europris", "extra", "farmasi", "fastlege", "fhi", "folkehelse", "folkehelseinstituttet", "forbruker", "fusjon", "handlevaner", "helsedirektoratet", "helsekost", "helsepolitikk", "hylleplass", "inflasjon", "influencer", "instagram", "johnson & johnson", "joker", "kampanje", "kicks", "kiwi", "kjedemakt", "kjøpekraft", "kjøper opp", "kkr", "kosmetikk", "kosttilskudd", "kronekurs", "lanserer", "lansering", "lavpris", "legemiddel", "legemidler", "leverandør", "lyko", "markedsføring", "matkjede", "matpris", "medisin", "medisiner", "meny", "merger", "merkevare", "netthandel", "nordic capital", "norgesgruppen", "oppkjøp", "oppkjøpsfond", "orkla", "pe-fond", "pharma", "pharmacy", "priskrig", "prisvekst", "private equity", "private label", "reklame", "rema 1000", "renteheving", "rentekutt", "skjønnhet", "sminke", "solkrem", "sortiment", "sosiale medier", "spar", "sunscreen", "takeover", "tiktok", "trend", "unilever", "varehandel", "velvære", "vitamin"]},
 ];
 
