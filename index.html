@@ -74,7 +74,6 @@
 
     /* ── Notices & misc ── */
     .notice { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--red); border: 1px solid var(--red); border-radius: 2px; padding: 8px 12px; margin-bottom: 20px; }
-    .more-wrap { display: flex; justify-content: center; padding: 28px 0 0; }
     .empty-reset { display: inline-block; margin-top: 14px; background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 6px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); cursor: pointer; }
     .empty-reset:hover { border-color: var(--ink-2); color: var(--ink-1); }
     body { background: var(--bg); color: var(--ink-2); font-family: var(--sans); font-weight: 300; min-height: 100vh; -webkit-font-smoothing: antialiased; }
@@ -955,8 +954,8 @@ const DEMO=[
 // ── State ──────────────────���──────────────────────────────────────────────────
 let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle", activeDateRange="all", activeBrand="all";
 let showWeak=false, staleSince=null;
-let archiveOffset=0, archiveHasMore=false, briefFallback=false, usingDemo=false, loadToken=0, latestDigest=null;
-const ARCHIVE_PAGE=300;
+let briefFallback=false, usingDemo=false, loadToken=0, latestDigest=null;
+const ARCHIVE_PAGE=1000;
 const feedback={};
 const VIEW_HASH={today:"brief",archive:"arkiv",sources:"kilder"};
 // Hvis Supabase-biblioteket ikke lastet (CDN nede/blokkert) faller appen tilbake til eksempeldata
@@ -1068,12 +1067,9 @@ function handleVote(id,v,btn){
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-async function loadArticles(append=false){
+async function loadArticles(){
   const token=++loadToken;
-  if(!append){
-    archiveOffset=0;
-    document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
-  }
+  document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
   const base=()=>sb.from("articles").select("*").order("published_at",{ascending:false,nullsFirst:false});
   try{
     let data;
@@ -1089,27 +1085,26 @@ async function loadArticles(append=false){
         data=r2.data||[]; briefFallback=data.length>0;
       }
     } else {
-      const r=await base().range(archiveOffset,archiveOffset+ARCHIVE_PAGE-1);
-      if(r.error) throw r.error;
-      data=r.data||[];
-      archiveHasMore=data.length===ARCHIVE_PAGE;
-      archiveOffset+=data.length;
+      // Hent hele arkivet (Supabase gir maks 1000 rader per kall) slik at telling, filtre og søk gjelder alle saker
+      data=[];
+      for(;;){
+        const r=await base().range(data.length,data.length+ARCHIVE_PAGE-1);
+        if(r.error) throw r.error;
+        const page=r.data||[];
+        data.push(...page);
+        if(!page.length) break;  // tom side = ferdig (tåler også lavere maks-grense i Supabase)
+      }
     }
     if(token!==loadToken) return;  // en nyere forespørsel har tatt over
-    allArticles=append?[...allArticles,...data.filter(a=>!allArticles.some(b=>b.id===a.id))]:data;
+    allArticles=data;
     usingDemo=false;
   }catch(e){
     if(token!==loadToken) return;
     console.warn("Demo:",e.message);
-    allArticles=DEMO; usingDemo=true; archiveHasMore=false;
+    allArticles=DEMO; usingDemo=true;
   }
   renderNotice();
   applyFilters();
-}
-
-function loadMore(btn){
-  if(btn){ btn.disabled=true; btn.textContent="Laster…"; }
-  loadArticles(true);
 }
 
 function renderNotice(){
@@ -1365,9 +1360,6 @@ function renderArticles(arts){
     </article>`;
   });
   html+=`</div>`;
-  if(activeView==="archive"&&archiveHasMore){
-    html+=`<div class="more-wrap"><button class="empty-reset" onclick="loadMore(this)">Last inn eldre saker</button></div>`;
-  }
   el.innerHTML=html;
 }
 
