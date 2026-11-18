@@ -12,9 +12,10 @@ create table if not exists weekly_summaries (
 -- Tillat anon-lesing (for webapp)
 alter table weekly_summaries enable row level security;
 
+drop policy if exists "Public read" on weekly_summaries;
 create policy "Public read" on weekly_summaries
   for select using (true);
 
--- Tillat service_role å skrive (GitHub Actions bruker SUPABASE_KEY = service_role)
-create policy "Service write" on weekly_summaries
-  for insert with check (true);
+-- Skriving gjøres av GitHub Actions med service_role-nøkkelen, som går utenom RLS.
+-- Det skal derfor ikke finnes noen insert-policy her (den ville gitt anon skrivetilgang).
+drop policy if exists "Service write" on weekly_summaries;

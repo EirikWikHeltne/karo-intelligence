@@ -16,6 +16,18 @@ on:
         default: 'false'
         type: choice
         options: ['false', 'true']
+      lookback_hours:
+        description: 'Timer tilbake i tid (tom = automatisk; f.eks. 96 for å ta igjen tapte dager)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+# Unngå at to kjøringer skriver til databasen samtidig
+concurrency:
+  group: pharma-news
+  cancel-in-progress: false
 
 jobs:
   run-agent:
@@ -39,10 +51,12 @@ jobs:
         env:
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
+          LOOKBACK_HOURS:    ${{ github.event.inputs.lookback_hours }}
         run: python main.py
 
       - name: Kjør ukesdigest (kun fredag eller manuelt)
-        if: github.event.schedule == '0 7 * * 5' || github.event.inputs.run_digest == 'true'
+        # Kjøres selv om nyhetsagenten feilet – digesten bygger på det som allerede ligger i databasen
+        if: ${{ !cancelled() && (github.event.schedule == '0 7 * * 5' || github.event.inputs.run_digest == 'true') }}
         env:
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}

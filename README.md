@@ -21,7 +21,7 @@ Supabase (database)
 Vercel (webapp)
 ```
 
-**Daglig** (man–fre kl. 07:00 og 13:00): GitHub Actions kjører `main.py` → nye artikler lagres i databasen → vises i appen umiddelbart.
+**Daglig** (man–fre kl. 07:00 og 13:00): GitHub Actions kjører `main.py` → nye artikler lagres i databasen → vises i appen umiddelbart. Agenten ser 26 timer tilbake; mandag 74 timer slik at helgens saker kommer med.
 
 **Ukentlig** (fre kl. 08:00): `weekly_digest.py` lager en nøkkelord-basert oppsummering av ukens viktigste saker → vises som banner øverst i appen.
 
@@ -58,7 +58,7 @@ pip install -r requirements.txt
 
 1. Opprett et nytt prosjekt på [supabase.com](https://supabase.com)
 2. Gå til **SQL Editor** og kjør begge SQL-filene:
-   - `supabase_setup.sql` (articles-tabell)
+   - `supabase_setup.sql` (articles- og feedback-tabell)
    - `weekly_summaries_table.sql` (ukesdigest-tabell)
 3. Hent `Project URL` og `service_role key` under **Settings → API**
 
@@ -94,7 +94,7 @@ python weekly_digest.py
 ```
 
 **Via GitHub Actions UI:**
-Gå til **Actions → Pharma News Agent → Run workflow**. Du kan velge å kjøre ukesdigesten manuelt ved å sette `run_digest = true`.
+Gå til **Actions → Pharma News Agent → Run workflow**. Du kan velge å kjøre ukesdigesten manuelt ved å sette `run_digest = true`. Har agenten stått noen dager, sett `lookback_hours` (f.eks. `96`) for å hente det som ble tapt – lokalt: `LOOKBACK_HOURS=96 python main.py`.
 
 ---
 
@@ -146,13 +146,14 @@ Agenten skriver tydelige feil i GitHub Actions-loggen, og kjøringen blir rød h
 |---------|---------|
 | `SUPABASE_URL peker til en vert som ikke finnes` | Rett secreten `SUPABASE_URL` til `https://<prosjekt-id>.supabase.co` (samme prosjekt som i `index.html`). |
 | `N kilder ga ingen data` | Feeden er nede eller har endret adresse – sjekk `[FEED]`-linjene. |
+| `Ingen av kildene svarte med innhold` | Nettverksfeil i kjøringen – kjør på nytt, eventuelt med `lookback_hours`. |
 | Appen viser «Ingen nye saker siden …» | Agenten har ikke kjørt. GitHub skrur av planlagte workflows etter 60 dager uten aktivitet – aktiver under **Actions**. |
 
 ---
 
 ## Webapp-funksjoner
 
-- **Dagens brief** – den mest Karo-relevante saken som toppsak + artikkelliste siste 24 timer
+- **Dagens brief** – den mest Karo-relevante saken som toppsak + artikkelliste siste 24 timer (mandag: siden fredag)
 - **Kun sterke treff** – saker med score under 60 skjules som standard («Vis svake treff» viser alle)
 - **Ukesdigest** – oppsummering av ukens viktigste (topp-saker, Karo-merker, fordeling), vises øverst i Dagens brief i 7 dager (kan skjules)
 - **Helg/stille dager** – finnes ingen saker siste 24 timer, vises de siste sakene i stedet for en tom side
