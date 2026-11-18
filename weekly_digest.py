@@ -56,6 +56,8 @@ def save_digest(sb, digest: dict, article_count: int):
     now = datetime.now(timezone.utc)
     # Bruk ukens mandag som week_start – stabilt uavhengig av hvilken dag digesten kjøres.
     monday = (now - timedelta(days=now.weekday())).date()
+    # Erstatt en eventuell tidligere digest for samme uke (manuell omkjøring) i stedet for å duplisere
+    sb.table("weekly_summaries").delete().eq("week_start", monday.isoformat()).execute()
     sb.table("weekly_summaries").insert({
         "title":         digest["title"],
         "summary":       digest["summary"],

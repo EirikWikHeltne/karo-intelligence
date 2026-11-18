@@ -26,26 +26,41 @@ CREATE INDEX IF NOT EXISTS idx_articles_created_at   ON articles (created_at DES
 -- Aktiver Row Level Security (anbefalt for Supabase)
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 
--- Tillat lese- og skrivetilgang med service role key (brukes av agenten)
-CREATE POLICY "Service role full access"
-  ON articles
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- NB: service_role-nøkkelen (brukes av agenten i GitHub Actions) går utenom RLS og
+-- trenger ingen policy. Policyene under gjelder anon-nøkkelen som webappen bruker.
+-- Siden appen er intern og ikke har innlogging, har anon full tilgang – alle som har
+-- adressen kan altså lese, endre og slette. Vurder innlogging (Supabase Auth) eller
+-- passordbeskyttelse i Vercel hvis appen skal deles bredere.
+-- (PostgreSQL støtter ikke CREATE POLICY IF NOT EXISTS, derfor DROP + CREATE.)
+DROP POLICY IF EXISTS "Service role full access" ON articles;
 
--- Tillat oppdatering og sletting fra webapp (anon-nøkkel)
--- NB: Siden appen er intern og ikke har innlogging, gir vi anon tilgang.
--- Vurder å bytte til auth-basert tilgang hvis appen blir offentlig.
-CREATE POLICY IF NOT EXISTS "Anon update"
-  ON articles FOR UPDATE USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Anon read" ON articles;
+CREATE POLICY "Anon read"   ON articles FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Anon delete"
-  ON articles FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Anon insert" ON articles;
+CREATE POLICY "Anon insert" ON articles FOR INSERT WITH CHECK (true);
 
--- Tillat anon å lese (for webapp)
-CREATE POLICY IF NOT EXISTS "Anon read"
-  ON articles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Anon update" ON articles;
+CREATE POLICY "Anon update" ON articles FOR UPDATE USING (true) WITH CHECK (true);
 
--- Tillat anon å skrive (for manuell innsending)
-CREATE POLICY IF NOT EXISTS "Anon insert"
-  ON articles FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Anon delete" ON articles;
+CREATE POLICY "Anon delete" ON articles FOR DELETE USING (true);
+
+-- ── Tilbakemeldinger (tommel opp/ned i webappen) ─────────────────────────────
+-- Én stemme per artikkel, delt av hele teamet.
+CREATE TABLE IF NOT EXISTS feedback (
+  article_id  uuid        PRIMARY KEY REFERENCES articles (id) ON DELETE CASCADE,
+  vote        text        NOT NULL CHECK (vote IN ('up', 'down')),
+  voted_at    timestamptz DEFAULT now()
+);
+
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anon read" ON feedback;
+CREATE POLICY "Anon read"   ON feedback FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anon insert" ON feedback;
+CREATE POLICY "Anon insert" ON feedback FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anon update" ON feedback;
+CREATE POLICY "Anon update" ON feedback FOR UPDATE USING (true) WITH CHECK (true);

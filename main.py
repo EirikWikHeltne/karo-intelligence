@@ -9,6 +9,7 @@ import re
 import sys
 import json
 import html
+import math
 import socket
 import urllib.request
 from urllib.parse import quote_plus, urlparse
@@ -238,7 +239,9 @@ BRAND_KEYWORDS = {
     "Paracet":  ["paracet"],
 }
 
-LOOKBACK_HOURS = 26
+LOOKBACK_HOURS = 26          # vanlig kjøring: siden forrige kjøring + margin
+LOOKBACK_HOURS_MONDAY = 74   # mandag: dekk helgen (agenten kjører ikke lør/søn)
+MAX_LOOKBACK_HOURS = 24 * 14
 MIN_STORE_SCORE = 40   # saker under dette lagres ikke
 MIN_SHOWN_SCORE = 60   # appen viser saker fra denne scoren som standard (svakere er "svake treff")
 
@@ -296,6 +299,23 @@ _BAD_XML_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 _BARE_AMP      = re.compile(r"&(?!#\d+;|#x[0-9a-fA-F]+;|[A-Za-z][A-Za-z0-9]*;)")
 
 
+def lookback_hours(now: datetime | None = None) -> int:
+    """Hvor langt tilbake vi henter. Agenten kjører bare man–fre, så mandag må vinduet
+    dekke helgen – ellers går alt publisert fredag ettermiddag til søndag tapt.
+    Miljøvariabelen LOOKBACK_HOURS overstyrer (for å ta igjen dager der agenten har stått)."""
+    env = os.environ.get("LOOKBACK_HOURS", "").strip()
+    if env.isdigit() and int(env) > 0:
+        return min(int(env), MAX_LOOKBACK_HOURS)
+    now = now or datetime.now(timezone.utc)
+    return LOOKBACK_HOURS_MONDAY if now.weekday() == 0 else LOOKBACK_HOURS
+
+
+def with_window(url: str, hours: int) -> str:
+    """Utvid Google News-søkets `when:2d` når vi ser lenger tilbake enn to døgn."""
+    days = max(2, math.ceil(hours / 24))
+    return url.replace("when%3A2d", f"when%3A{days}d")
+
+
 def fetch_feed(url: str):
     """Hent feed med timeout og nettleser-lik User-Agent, og rens vanlige XML-feil
     (kontrolltegn og nakne &) som ellers gir 'not well-formed (invalid token)'."""
@@ -347,20 +367,25 @@ def _title_key(title: str) -> str:
     return re.sub(r"[^\w]+", "", title.lower())[:80]
 
 
-def fetch_recent_articles() -> list[dict]:
-    cutoff   = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
+def fetch_recent_articles() -> tuple[list[dict], int]:
+    """Returnerer (unike relevante artikler, antall feeds som svarte med innhold)."""
+    hours    = lookback_hours()
+    cutoff   = datetime.now(timezone.utc) - timedelta(hours=hours)
     articles = []
     broken   = []
+    feeds_ok = 0
+    print(f"[INFO] Henter saker fra de siste {hours} timene")
 
     for source, urls in RSS_FEEDS.items():
         for url in urls:
             try:
-                feed = fetch_feed(url)
+                feed = fetch_feed(with_window(url, hours))
             except Exception as e:
                 broken.append(source)
                 print(f"[WARN] Feil ved henting av {source} {url}: {type(e).__name__}: {e}")
                 continue
             total = len(feed.entries)
+            feeds_ok += 1 if total else 0
             bozo_reason = ""
             if getattr(feed, "bozo", 0) and not total:
                 bozo_reason = f" bozo={type(feed.bozo_exception).__name__}: {feed.bozo_exception}"
@@ -404,7 +429,7 @@ def fetch_recent_articles() -> list[dict]:
     if broken:
         print(f"::warning::{len(set(broken))} kilder ga ingen data denne kjøringen: {', '.join(sorted(set(broken)))}")
     print(f"[INFO] {len(unique)} unike artikler etter relevans-filter (før dedup: {len(articles)})")
-    return unique
+    return unique, feeds_ok
 
 
 # ── Nøkkelord-scoring ─────────────────────────────────────────────────────────
@@ -492,15 +517,30 @@ def check_supabase_host(url: str) -> bool:
         return False
 
 
-def known_urls(sb) -> set[str]:
-    """URL-er som allerede er lagret de siste dagene – disse trenger ikke klassifiseres på nytt."""
+MIN_TITLE_KEY = 25  # korte titler ("Ukens tall") er for generiske til å regnes som samme sak
+
+
+def known_articles(sb) -> tuple[set[str], set[str]]:
+    """URL-er og tittelnøkler som er lagret de siste dagene. Tittelnøklene fanger samme sak
+    som dukker opp på nytt med annen URL (f.eks. først fra avisens RSS, så via Google News)."""
     since = (datetime.now(timezone.utc) - timedelta(days=4)).isoformat()
+    urls, titles = set(), set()
     try:
-        res = sb.table("articles").select("url").gte("created_at", since).limit(5000).execute()
-        return {r["url"] for r in (res.data or [])}
+        # Supabase gir maks 1000 rader per kall – bla til alt er hentet
+        for start in range(0, 10000, 1000):
+            res = (sb.table("articles").select("url,title").gte("created_at", since)
+                     .order("created_at", desc=True).range(start, start + 999).execute())
+            rows = res.data or []
+            for r in rows:
+                urls.add(r["url"])
+                tk = _title_key(clean_text(r.get("title") or ""))
+                if len(tk) >= MIN_TITLE_KEY:
+                    titles.add(tk)
+            if len(rows) < 1000:
+                break
     except Exception as e:
-        print(f"[WARN] Kunne ikke hente eksisterende URL-er: {e}")
-        return set()
+        print(f"[WARN] Kunne ikke hente eksisterende artikler: {e}")
+    return urls, titles
 
 
 def repair_old_rows(sb) -> None:
@@ -612,11 +652,15 @@ def main():
         sb = create_client(sb_url, sb_key)
         repair_old_rows(sb)
 
-    articles = fetch_recent_articles()
+    articles, feeds_ok = fetch_recent_articles()
+    if not feeds_ok:
+        print("::error::Ingen av kildene svarte med innhold – nettverksfeil eller blokkering. Ingenting er lagret.")
+        sys.exit(1)
     if sb is not None:
-        seen = known_urls(sb)
+        seen_urls, seen_titles = known_articles(sb)
         before = len(articles)
-        articles = [a for a in articles if a["url"] not in seen]
+        articles = [a for a in articles
+                    if a["url"] not in seen_urls and _title_key(a["title"]) not in seen_titles]
         print(f"[INFO] {before - len(articles)} allerede lagret – {len(articles)} nye å vurdere")
     if not articles:
         print("[INFO] Ingen nye artikler passerte relevans-filteret. Avslutter.")

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#151311" media="(prefers-color-scheme: dark)" />
-  <meta name="description" content="Daglig brief om norsk farmasi, apotek og helse – drevet av AI." />
+  <meta name="description" content="Daglig brief om apotek, dagligvare og egenomsorg – relevant for Karo Healthcare." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231a1714'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-style='italic' font-size='40' text-anchor='middle' fill='%23faf9f7'%3EK%3C/text%3E%3C/svg%3E" />
   <title>Karo Intelligence</title>
@@ -14,13 +14,14 @@
     try { const t = localStorage.getItem("karo-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
   </script>
   <meta property="og:title" content="Karo Intelligence · Markedsintelligens" />
-  <meta property="og:description" content="Daglig brief om norsk farmasi, apotek og helse – drevet av AI." />
+  <meta property="og:description" content="Daglig brief om apotek, dagligvare og egenomsorg – relevant for Karo Healthcare." />
   <meta property="og:image" content="https://karo-intelligence.vercel.app/og-image.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.1"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -76,6 +77,9 @@
     .notice { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--red); border: 1px solid var(--red); border-radius: 2px; padding: 8px 12px; margin-bottom: 20px; }
     .empty-reset { display: inline-block; margin-top: 14px; background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 6px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); cursor: pointer; }
     .empty-reset:hover { border-color: var(--ink-2); color: var(--ink-1); }
+    .more-wrap { text-align: center; padding: 28px 0 8px; }
+    .more-btn { background: none; border: 1px solid var(--rule-dk); border-radius: 2px; padding: 10px 18px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); cursor: pointer; }
+    .more-btn:hover { border-color: var(--ink-2); color: var(--ink-1); }
     body { background: var(--bg); color: var(--ink-2); font-family: var(--sans); font-weight: 300; min-height: 100vh; -webkit-font-smoothing: antialiased; }
     .shell { max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
 
@@ -542,7 +546,7 @@
   <div id="toolbar">
     <div class="search-wrap">
       <span class="search-icon" aria-hidden="true">⌕</span>
-      <input id="search-input" type="search" placeholder="Søk i tittel, sammendrag og kilde…  ( / )" aria-label="Søk" oninput="applyFilters()" />
+      <input id="search-input" type="search" placeholder="Søk i tittel, sammendrag og kilde…  ( / )" aria-label="Søk" oninput="onSearchInput()" />
     </div>
     <div class="src-filters" id="source-filters"></div>
     <div class="date-filters" id="date-filters"></div>
@@ -597,7 +601,7 @@
 
 <!-- ── Edit article modal ── -->
 <div id="edit-modal" class="modal-overlay">
-  <div class="modal-box" role="dialog" aria-modal="true">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Rediger artikkel">
     <div class="modal-pull"></div>
     <button class="modal-close" onclick="closeEditModal()" aria-label="Lukk">×</button>
     <div class="modal-header-label">Rediger artikkel</div>
@@ -606,17 +610,17 @@
     <input type="hidden" id="edit-id" />
 
     <div class="modal-field">
-      <label class="modal-field-label">Tittel</label>
+      <label class="modal-field-label" for="edit-title">Tittel</label>
       <input id="edit-title" type="text" class="modal-input" autocomplete="off" />
     </div>
 
     <div class="modal-grid-2">
       <div>
-        <label class="modal-field-label">Kilde</label>
+        <label class="modal-field-label" for="edit-source">Kilde</label>
         <input id="edit-source" type="text" class="modal-input" autocomplete="off" />
       </div>
       <div>
-        <label class="modal-field-label">Kategori</label>
+        <label class="modal-field-label" for="edit-category">Kategori</label>
         <select id="edit-category" class="modal-input">
           <option value="annet">Annet</option>
           <option value="M&A">M&A</option>
@@ -648,17 +652,17 @@
 
     <div class="modal-grid-2">
       <div>
-        <label class="modal-field-label">Publisert</label>
+        <label class="modal-field-label" for="edit-published">Publisert</label>
         <input id="edit-published" type="datetime-local" class="modal-input" />
       </div>
       <div>
-        <label class="modal-field-label">Relevans-score <span style="opacity:0.5">1–100</span></label>
+        <label class="modal-field-label" for="edit-score">Relevans-score <span style="opacity:0.5">1–100</span></label>
         <input id="edit-score" type="number" min="1" max="100" inputmode="numeric" class="modal-input" />
       </div>
     </div>
 
     <div class="modal-field-last">
-      <label class="modal-field-label">Sammendrag</label>
+      <label class="modal-field-label" for="edit-summary">Sammendrag</label>
       <textarea id="edit-summary" rows="4" class="modal-input"></textarea>
     </div>
 
@@ -674,39 +678,39 @@
 
 <!-- ── Add article modal ── -->
 <div id="add-modal" class="modal-overlay">
-  <div class="modal-box" role="dialog" aria-modal="true">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Legg til artikkel">
     <div class="modal-pull"></div>
     <button class="modal-close" onclick="closeAddModal()" aria-label="Lukk">×</button>
     <div class="modal-header-label">Legg til artikkel</div>
     <div class="modal-header-title">Lim inn en URL og<br>vi gjør resten</div>
 
     <div class="modal-field">
-      <label class="modal-field-label">URL</label>
+      <label class="modal-field-label" for="add-url">URL</label>
       <input id="add-url" type="url" placeholder="https://e24.no/artikkel…"
         class="modal-input" autocomplete="url" inputmode="url"
         oninput="resetAddForm()" />
     </div>
 
     <div class="modal-field">
-      <label class="modal-field-label">Tittel</label>
+      <label class="modal-field-label" for="add-title">Tittel</label>
       <input id="add-title" type="text" placeholder="Hentes automatisk eller skriv selv…"
         class="modal-input" autocomplete="off" />
     </div>
 
     <div class="modal-grid-2">
       <div>
-        <label class="modal-field-label">Kilde</label>
+        <label class="modal-field-label" for="add-source">Kilde</label>
         <input id="add-source" type="text" placeholder="E24, LinkedIn…"
           class="modal-input" autocomplete="off" />
       </div>
       <div>
-        <label class="modal-field-label">Publiseringsdato</label>
+        <label class="modal-field-label" for="add-published">Publiseringsdato</label>
         <input id="add-published" type="datetime-local" class="modal-input" />
       </div>
     </div>
 
     <div class="modal-field">
-      <label class="modal-field-label">Kategori</label>
+      <label class="modal-field-label" for="add-category">Kategori</label>
       <select id="add-category" class="modal-input">
         <option value="annet">Annet</option>
         <option value="M&A">M&A</option>
@@ -736,7 +740,7 @@
     </div>
 
     <div class="modal-field-last">
-      <label class="modal-field-label">Notat <span style="opacity:0.5">(valgfritt)</span></label>
+      <label class="modal-field-label" for="add-note">Notat <span style="opacity:0.5">(valgfritt)</span></label>
       <textarea id="add-note" rows="2" placeholder="Hvorfor er dette relevant for Karo?"
         class="modal-input" style="resize:none;"></textarea>
     </div>
@@ -956,6 +960,8 @@ let allArticles=[], activeView="today", activeCategory="all", activeSource="Alle
 let showWeak=false, staleSince=null;
 let briefFallback=false, usingDemo=false, loadToken=0, latestDigest=null;
 const ARCHIVE_PAGE=1000;
+const RENDER_PAGE=100;   // arkivet tegnes i bolker – tusenvis av rader i DOM gjør søk og filtrering tregt
+let renderLimit=RENDER_PAGE, lastRendered=[], lastLoadedAt=0, searchTimer=null;
 const feedback={};
 const VIEW_HASH={today:"brief",archive:"arkiv",sources:"kilder"};
 // Hvis Supabase-biblioteket ikke lastet (CDN nede/blokkert) faller appen tilbake til eksempeldata
@@ -988,6 +994,13 @@ function storeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 
 function categoryImg(cat) {
   return (CAT_MAP[cat]||CAT_MAP["annet"]).img;
+}
+// Listebildene er 80×60 px – hent en liten variant i stedet for 900 px-bildet
+function thumbImg(u){ return String(u).replace(/([?&]w=)900\b/,"$1240"); }
+
+// Dagens brief dekker siste 26 timer; mandag dekkes hele helgen (agenten kjører ikke lør/søn)
+function briefWindow(){
+  return new Date().getDay()===1?{hours:74,label:"Siden fredag"}:{hours:26,label:"Siste 24 timer"};
 }
 
 // Returner array med alle Karo-merkevarer nevnt i teksten
@@ -1047,35 +1060,46 @@ function feedbackHtml(rawId){
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
-async function vote(id,v,upBtn,downBtn){
+async function handleVote(id,v,btn){
   if(feedback[id]===v) return;
-  feedback[id]=v;
-  upBtn.classList.toggle("voted",v==="up");
-  downBtn.classList.toggle("voted",v==="down");
-  try{
-    await sb.from("feedback").upsert({article_id:id,vote:v,voted_at:new Date().toISOString()},{on_conflict:"article_id"});
-    renderCalibration();
-  }catch(e){console.warn("Feedback:",e.message);}
-}
-
-function handleVote(id,v,btn){
-  const up=document.getElementById(`up-${id}`);
-  const dn=document.getElementById(`dn-${id}`);
-  vote(id,v,up,dn);
   const fb=btn.closest(".ar-feedback");
-  if(!fb.querySelector(".fb-label")){ const s=document.createElement("span");s.className="fb-label";s.textContent="Lagret";fb.appendChild(s); }
+  const prev=feedback[id];
+  const paint=(vote,text)=>{
+    fb.querySelector(".fb-btn.up").classList.toggle("voted",vote==="up");
+    fb.querySelector(".fb-btn.down").classList.toggle("voted",vote==="down");
+    let l=fb.querySelector(".fb-label");
+    if(!l){ l=document.createElement("span"); l.className="fb-label"; fb.querySelector(".fb-btn.down").after(l); }
+    l.textContent=text;
+  };
+  feedback[id]=v; paint(v,"Lagrer…");
+  try{
+    if(!sb||usingDemo) throw new Error("ingen databasekontakt");
+    const{error}=await sb.from("feedback").upsert({article_id:id,vote:v,voted_at:new Date().toISOString()},{onConflict:"article_id"});
+    if(error) throw error;
+    paint(v,"Lagret");
+    renderCalibration();
+  }catch(e){
+    // Ikke lat som stemmen er lagret når databasen avviste den
+    console.warn("Feedback:",e.message);
+    if(prev) feedback[id]=prev; else delete feedback[id];
+    paint(prev,"Ikke lagret");
+  }
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-async function loadArticles(){
+async function loadArticles(silent){
   const token=++loadToken;
-  document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
+  // silent: oppfriskning i bakgrunnen – behold listen på skjermen til nye data er klare
+  if(!silent){
+    renderLimit=RENDER_PAGE;
+    document.getElementById("articles-container").innerHTML='<div class="loading">Laster nyheter</div>';
+  }
   const base=()=>sb.from("articles").select("*").order("published_at",{ascending:false,nullsFirst:false});
   try{
     let data;
     if(activeView==="today"){
       briefFallback=false;
-      const r=await base().gte("published_at",new Date(Date.now()-26*3600000).toISOString());
+      const r=await base().gte("published_at",new Date(Date.now()-briefWindow().hours*3600000).toISOString());
       if(r.error) throw r.error;
       data=r.data||[];
       // Ingen nye saker (f.eks. i helgen) – vis de siste sakene i stedet for en tom side
@@ -1098,6 +1122,7 @@ async function loadArticles(){
     if(token!==loadToken) return;  // en nyere forespørsel har tatt over
     allArticles=data;
     usingDemo=false;
+    lastLoadedAt=Date.now();
   }catch(e){
     if(token!==loadToken) return;
     console.warn("Demo:",e.message);
@@ -1224,8 +1249,13 @@ function applyFilters(){
   renderArticles(f);
   const weakBtn=(weakCount||showWeak)?` · <button class="weak-toggle" onclick="toggleWeak()">${showWeak?"Skjul svake treff":`Vis ${weakCount} svake treff`}</button>`:"";
   document.getElementById("section-count").innerHTML=`${f.length} ${f.length===1?"sak":"saker"}${weakBtn}`;
-  if(activeView==="today") document.getElementById("section-label").textContent=briefFallback?"Siste saker":"Siste 24 timer";
+  if(activeView==="today") document.getElementById("section-label").textContent=briefFallback?"Siste saker":briefWindow().label;
 }
+function onSearchInput(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>{ renderLimit=RENDER_PAGE; applyFilters(); },150);
+}
+function showMore(){ renderLimit+=RENDER_PAGE*2; renderArticles(lastRendered); }
 
 function isStrong(a){
   if(getBrands(a).length) return true;
@@ -1272,9 +1302,11 @@ function renderBrandBar(arts){
 
 // ── Render category bar ───────────────────────────────────────────────────────
 function renderCatBar(arts){
-  const c={};arts.forEach(a=>{c[a.category]=(c[a.category]||0)+1;});
+  // Tell bare det som faktisk vises (svake treff er skjult som standard) – samme regel som kildefilteret
+  const c={};let total=0;
+  arts.forEach(a=>{ if(showWeak||isStrong(a)){ c[a.category]=(c[a.category]||0)+1; total++; } });
   document.getElementById("cat-buttons").innerHTML=CATEGORIES.map(cat=>{
-    const n=cat.id==="all"?arts.length:(c[cat.id]||0);
+    const n=cat.id==="all"?total:(c[cat.id]||0);
     const a=activeCategory===cat.id;
     if(!n&&cat.id!=="all"&&!a) return "";
     return `<button class="cat-btn${a?" active":""}" onclick="setCat('${cat.id}')">${cat.label}<span class="cat-n">${n}</span></button>`;
@@ -1293,6 +1325,7 @@ function resetFilters(){
 }
 
 function renderArticles(arts){
+  lastRendered=arts;
   const el=document.getElementById("articles-container");
   const sr=document.getElementById("stats-row");
   if(!arts.length){
@@ -1335,8 +1368,8 @@ function renderArticles(arts){
   }
 
   html+=`<div class="articles-list">`;
-  arts.slice(start).forEach((a,i)=>{
-    const img=a.image_url||categoryImg(a.category);
+  arts.slice(start,renderLimit).forEach((a,i)=>{
+    const img=a.image_url||thumbImg(categoryImg(a.category));
     const brands=getBrands(a);
     const dateIso=a.published_at||a.created_at;
     const timeStr=activeView==="archive"?formatDateFull(dateIso):formatTime(dateIso);
@@ -1360,6 +1393,7 @@ function renderArticles(arts){
     </article>`;
   });
   html+=`</div>`;
+  if(arts.length>renderLimit) html+=`<div class="more-wrap"><button class="more-btn" onclick="showMore()">Vis flere · ${arts.length-renderLimit} igjen</button></div>`;
   el.innerHTML=html;
 }
 
@@ -1434,7 +1468,7 @@ function switchView(v){
     if(v!=="archive"){activeDateRange="all";document.querySelectorAll(".date-btn").forEach((b,i)=>b.classList.toggle("active",i===0));}
     title.innerHTML=v==="today"?"Dagens <em>brief</em>":"Arkiv <em>&amp; søk</em>";
     document.title=(v==="today"?"Dagens brief":"Arkiv & søk")+" · Karo Intelligence";
-    document.getElementById("section-label").textContent=v==="today"?"Siste 24 timer":"Arkiv";
+    document.getElementById("section-label").textContent=v==="today"?briefWindow().label:"Arkiv";
     renderDigest();
     loadArticles();
   }
@@ -1446,10 +1480,10 @@ function viewFromHash(){
 }
 window.addEventListener("hashchange",()=>{ const v=viewFromHash(); if(v!==activeView) switchView(v); });
 
-function setCat(cat){activeCategory=cat;applyFilters();}
-function setBrand(brand){activeBrand=brand;applyFilters();}
-function setSrc(src){activeSource=src;applyFilters();}
-function setDateRange(range,btn){activeDateRange=range;document.querySelectorAll(".date-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
+function setCat(cat){activeCategory=cat;renderLimit=RENDER_PAGE;applyFilters();}
+function setBrand(brand){activeBrand=brand;renderLimit=RENDER_PAGE;applyFilters();}
+function setSrc(src){activeSource=src;renderLimit=RENDER_PAGE;applyFilters();}
+function setDateRange(range,btn){activeDateRange=range;renderLimit=RENDER_PAGE;document.querySelectorAll(".date-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");applyFilters();}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("date-filters").innerHTML=
@@ -1461,6 +1495,13 @@ switchView(viewFromHash());
 loadFeedback();
 loadDigest();
 loadLastUpdated();
+
+// Appen står ofte åpen i en fane hele dagen – hent nye saker når man kommer tilbake til den
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState!=="visible"||activeView==="sources"||usingDemo) return;
+  const modalOpen=["edit-modal","add-modal"].some(id=>document.getElementById(id).style.display==="flex");
+  if(!modalOpen&&lastLoadedAt&&Date.now()-lastLoadedAt>15*60000){ loadArticles(true); loadLastUpdated(); }
+});
 
 // ── Tastatursnarveier ─────────────────────────────────────────────────────────
 document.addEventListener("keydown",e=>{
@@ -1670,7 +1711,7 @@ async function submitArticle(){
       published_at:    pubRaw ? new Date(pubRaw).toISOString() : new Date().toISOString(),
       relevance_score: 95,   // manuelt innsendte er alltid høy relevans
       ingress:         "",
-    }, {on_conflict:"url", ignore_duplicates:false}).select();
+    }, {onConflict:"url", ignoreDuplicates:false}).select();
 
     if(error) throw error;
 
@@ -1697,13 +1738,13 @@ document.getElementById("add-modal").addEventListener("click", function(e){
 
 // ── Cookie consent ────────────────────────────────────────────────────────────
 (function(){
-  if(!localStorage.getItem("karo-cookie-consent")){
+  if(!storeGet("karo-cookie-consent")){
     document.getElementById("cookie-banner").style.display="flex";
   }
 })();
 
 function acceptCookies(){
-  localStorage.setItem("karo-cookie-consent","1");
+  storeSet("karo-cookie-consent","1");
   const el=document.getElementById("cookie-banner");
   el.style.opacity="0";
   setTimeout(()=>{ el.style.display="none"; }, 300);
