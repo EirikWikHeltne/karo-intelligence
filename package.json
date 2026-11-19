@@ -1,0 +1,24 @@
+{
+  "name": "karo-intelligence",
+  "version": "1.0.0",
+  "description": "Automatisert nyhetsagent for Karo Healthcare Norway. Henter daglig nyheter fra norske og internasjonale kilder, scorer Karo-relevans med nøkkelord (ingen AI, ingen API-kostnad), og presenterer dem i en intern webapp.",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EirikWikHeltne/karo-intelligence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EirikWikHeltne/karo-intelligence/issues"
+  },
+  "homepage": "https://github.com/EirikWikHeltne/karo-intelligence#readme",
+  "private": true,
+  "dependencies": {
+    "@rive-app/canvas": "^2.51.0",
+    "@splinetool/runtime": "^2.0.203",
+    "gsap": "^3.15.1",
+    "three": "^0.187.0"
+  }
+}

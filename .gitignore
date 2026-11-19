@@ -5,3 +5,4 @@ __pycache__/
 articles_*.json
 .vercel
 .DS_Store
+node_modules/
